@@ -1,11 +1,20 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "FicTrail",
-  "version": "1.0",
+  "version": "0.1.2",
   "description": "AO3 history search extension",
+  
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fictrail@serpentineegg.dev"
+    }
+  },
 
   "permissions": [
-    "tabs",
+    "tabs"
+  ],
+
+  "host_permissions": [
     "*://archiveofourown.org/*"
   ],
 
@@ -18,12 +27,11 @@
     }
   ],
 
-  "browser_action": {
+  "action": {
     "default_title": "FicTrail - AO3 History Viewer"
   },
 
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "scripts": ["background.js"]
   }
 }

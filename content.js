@@ -136,7 +136,7 @@ async function fetchMultiplePages(username, maxPagesToFetch = 10) {
 }
 
 // Function to handle messages from popup/extension page
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'getUsername') {
     // Just return the username if logged in

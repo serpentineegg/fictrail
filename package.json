@@ -4,13 +4,20 @@
   "description": "A browser extension for viewing and searching your AO3 history",
   "scripts": {
     "lint": "eslint *.js",
-    "lint:fix": "eslint *.js --fix"
+    "lint:fix": "eslint *.js --fix",
+    "build": "web-ext build --source-dir=. --artifacts-dir=dist --ignore-files=node_modules package*.json .git* .eslint* eslint.config.js README.md build dist fictrail.iml .idea",
+    "sign": "web-ext sign --source-dir=. --artifacts-dir=dist"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "eslint": "^8.57.0",
-    "@eslint/js": "^9.0.0"
+    "web-ext": "^8.9.0"
   },
-  "keywords": ["browser-extension", "ao3", "fanfiction"],
+  "keywords": [
+    "browser-extension",
+    "ao3",
+    "fanfiction"
+  ],
   "author": "Seprentine Egg",
   "license": "MIT"
 }

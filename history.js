@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
       navigateBtn.textContent = navigateText;
       navigateBtn.style.display = 'inline-block';
       navigateBtn.onclick = () => {
-        browser.tabs.create({url: navigateUrl});
+        chrome.tabs.create({url: navigateUrl});
       };
     } else {
       navigateBtn.style.display = 'none';
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       // Find all AO3 tabs
       const ao3Tabs = await new Promise((resolve) => {
-        browser.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, resolve);
+        chrome.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, resolve);
       });
 
       if (!ao3Tabs || ao3Tabs.length === 0) {
@@ -139,8 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
           showLoading(`Investigating tab: ${new URL(tab.url).pathname}...`);
 
           const response = await new Promise((resolve) => {
-            browser.tabs.sendMessage(tab.id, {action: 'getUsername'}, (response) => {
-              if (browser.runtime.lastError) {
+            chrome.tabs.sendMessage(tab.id, {action: 'getUsername'}, (response) => {
+              if (chrome.runtime.lastError) {
                 resolve({error: 'Unable to connect to tab'});
               } else {
                 resolve(response || {error: 'No response'});
@@ -190,10 +190,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
       try {
         const totalPagesResponse = await new Promise((resolve) => {
-          browser.tabs.sendMessage(tab.id, {
+          chrome.tabs.sendMessage(tab.id, {
             action: 'getTotalPages'
           }, (response) => {
-            if (browser.runtime.lastError) {
+            if (chrome.runtime.lastError) {
               resolve({error: 'No response received'});
             } else {
               resolve(response || {error: 'No response received'});
@@ -218,12 +218,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       const response = await new Promise((resolve) => {
-        browser.tabs.sendMessage(tab.id, {
+        chrome.tabs.sendMessage(tab.id, {
           action: 'getHistory',
           maxPages: pagesToLoad
         }, (response) => {
-          if (browser.runtime.lastError) {
-            console.error('Runtime error:', browser.runtime.lastError);
+          if (chrome.runtime.lastError) {
+            console.error('Runtime error:', chrome.runtime.lastError);
             resolve({error: 'No response received'});
           } else {
             resolve(response || {error: 'No response received'});
@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let lastAO3TabCount = null; // Track the last known tab count (null = not initialized)
 
   function updateAO3TabStatus() {
-    browser.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, function (ao3Tabs) {
+    chrome.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, function (ao3Tabs) {
       const instructionsContent = instructions.querySelector('.welcome-content');
       if (!instructionsContent) return;
 
@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const openAO3Btn = statusHint.querySelector('#open-ao3-btn');
         if (openAO3Btn) {
           openAO3Btn.addEventListener('click', () => {
-            browser.tabs.create({url: AO3_BASE_URL});
+            chrome.tabs.create({url: AO3_BASE_URL});
           });
         }
       }

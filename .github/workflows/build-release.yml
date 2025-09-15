@@ -29,21 +29,11 @@ jobs:
       
     - name: Create XPI package
       run: |
-        # Create a clean build directory
-        mkdir -p build
+        # Use web-ext to build the extension
+        npm run build
         
-        # Copy only the extension files (exclude dev files)
-        cp manifest.json build/
-        cp *.js build/
-        cp *.html build/
-        cp *.css build/
-        
-        # Create the XPI file (which is just a ZIP with .xpi extension)
-        cd build
-        zip -r ../fictrail-${{ github.ref_name }}.xpi .
-        cd ..
-        
-        # Also create a generic version for latest
+        # Rename the built extension to proper XPI format
+        mv dist/fictrail-1.0.zip fictrail-${{ github.ref_name }}.xpi
         cp fictrail-${{ github.ref_name }}.xpi fictrail-latest.xpi
         
     - name: Create Release
