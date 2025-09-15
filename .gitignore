@@ -1,0 +1,46 @@
+# Firefox Extension Build Files
+web-ext-artifacts/
+*.zip
+*.xpi
+
+# Development and Debug Files
+.web-extension-id
+web-ext.log
+
+# IDE Files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules (if you add build tools later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Firefox profile data (if testing with profiles)
+firefox-profile/
+test-profile/
