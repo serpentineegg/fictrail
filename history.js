@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // DOM elements
   const loadBtn = document.getElementById('load-history-btn');
   const loading = document.getElementById('loading');
-  const loadingMessage = document.getElementById('loading-message');
   const error = document.getElementById('error');
   const errorMessage = document.getElementById('error-message');
   const navigateBtn = document.getElementById('navigate-btn');
@@ -20,16 +19,14 @@ document.addEventListener('DOMContentLoaded', function () {
   const searchInput = document.getElementById('search-input');
   const searchBtn = document.getElementById('search-btn');
   const fandomFilter = document.getElementById('fandom-filter');
-  
+
   // Page selector elements
   const pageSelector = document.getElementById('page-selector');
   const pagesSlider = document.getElementById('pages-slider');
-  const pagesValue = document.getElementById('pages-value');
 
 
   let allWorks = [];
   let filteredWorks = [];
-  let currentUsername = '';
 
   // Initialize event listeners
   loadBtn.addEventListener('click', loadHistory);
@@ -40,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'Enter') performSearch();
   });
   fandomFilter.addEventListener('change', applyFilter);
-  
+
   // Page selector event listeners
   pagesSlider.addEventListener('input', updatePagesValue);
 
@@ -51,18 +48,23 @@ document.addEventListener('DOMContentLoaded', function () {
       if (tagValue) {
         searchInput.value = tagValue;
         performSearch();
+        // Scroll to the search section
+        document.querySelector('.history-controls').scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
       }
     }
   });
 
   // Clear search input on page load
   searchInput.value = '';
-  
-  
+
+
   function updatePagesValue() {
     updateReloadButtonText();
   }
-  
+
   function updateReloadButtonText() {
     const currentPages = parseInt(pagesSlider.value);
     // Check if we're in reload mode (history has been loaded)
@@ -70,8 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
       loadBtn.textContent = `Reload History (${currentPages} pages)`;
     }
   }
-  
-  
+
+
   function getPagesToLoad() {
     return parseInt(pagesSlider.value);
   }
@@ -85,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
       navigateBtn.textContent = navigateText;
       navigateBtn.style.display = 'inline-block';
       navigateBtn.onclick = () => {
-        browser.tabs.create({url: navigateUrl});
+        chrome.tabs.create({url: navigateUrl});
       };
     } else {
       navigateBtn.style.display = 'none';
@@ -108,14 +110,14 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadHistory() {
     // Clear search bar when reloading
     searchInput.value = '';
-    
+
     showLoading('Hunting for your AO3 tabs...');
     loadBtn.style.display = 'none';
 
     try {
       // Find all AO3 tabs
       const ao3Tabs = await new Promise((resolve) => {
-        browser.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, resolve);
+        chrome.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, resolve);
       });
 
       if (!ao3Tabs || ao3Tabs.length === 0) {
@@ -135,10 +137,10 @@ document.addEventListener('DOMContentLoaded', function () {
       for (const tab of ao3Tabs) {
         try {
           showLoading(`Investigating tab: ${new URL(tab.url).pathname}...`);
-          
+
           const response = await new Promise((resolve) => {
-            browser.tabs.sendMessage(tab.id, {action: 'getUsername'}, (response) => {
-              if (browser.runtime.lastError) {
+            chrome.tabs.sendMessage(tab.id, {action: 'getUsername'}, (response) => {
+              if (chrome.runtime.lastError) {
                 resolve({error: 'Unable to connect to tab'});
               } else {
                 resolve(response || {error: 'No response'});
@@ -160,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // No logged-in users found
       showError(
-        '<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account in one of your open tabs. We need access to your reading history!',
+        '<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account in one of your open tabs. We need access to your history!',
         true,
         `${AO3_BASE_URL}/users/login`,
         'Log Me In'
@@ -179,26 +181,26 @@ document.addEventListener('DOMContentLoaded', function () {
     // For initial load, get total pages first to determine appropriate default
     const isReload = loadBtn.textContent.includes('Reload History');
     let pagesToLoad;
-    
+
     if (isReload) {
       pagesToLoad = getPagesToLoad();
     } else {
       // For initial load, first get total pages to set appropriate default
-      showLoading('Checking your reading history...');
-      
+      showLoading('Checking your history...');
+
       try {
         const totalPagesResponse = await new Promise((resolve) => {
-          browser.tabs.sendMessage(tab.id, {
+          chrome.tabs.sendMessage(tab.id, {
             action: 'getTotalPages'
           }, (response) => {
-            if (browser.runtime.lastError) {
+            if (chrome.runtime.lastError) {
               resolve({error: 'No response received'});
             } else {
               resolve(response || {error: 'No response received'});
             }
           });
         });
-        
+
         if (totalPagesResponse.totalPages) {
           pagesToLoad = Math.min(10, totalPagesResponse.totalPages);
         } else {
@@ -209,19 +211,19 @@ document.addEventListener('DOMContentLoaded', function () {
         pagesToLoad = 10; // fallback
       }
     }
-    
-    const loadingMessage = `Collecting ${pagesToLoad} pages of ${username}'s reading history...`;
-    
+
+    const loadingMessage = `Collecting ${pagesToLoad} pages of ${username}'s history...`;
+
     showLoading(loadingMessage);
-    
+
     try {
       const response = await new Promise((resolve) => {
-        browser.tabs.sendMessage(tab.id, {
+        chrome.tabs.sendMessage(tab.id, {
           action: 'getHistory',
           maxPages: pagesToLoad
         }, (response) => {
-          if (browser.runtime.lastError) {
-            console.error('Runtime error:', browser.runtime.lastError);
+          if (chrome.runtime.lastError) {
+            console.error('Runtime error:', chrome.runtime.lastError);
             resolve({error: 'No response received'});
           } else {
             resolve(response || {error: 'No response received'});
@@ -249,13 +251,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Store works globally
     allWorks = works;
     filteredWorks = [...works];
-    currentUsername = username;
 
     // Update header with username and all stats
     const workCount = totalWorks || works.length;
     const uniqueAuthors = new Set(works.map(work => work.author)).size;
     const uniqueFandoms = new Set(works.flatMap(work => work.fandoms)).size;
-    
+
     headerSubtitle.textContent = `${username} • ${workCount} works • ${uniqueFandoms} fandoms • ${uniqueAuthors} authors`;
 
     // Add favorite tags summary
@@ -291,10 +292,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // AO3 typically shows 20 works per page, so limit to first 40 works
     const recentWorksLimit = 40;
     const recentWorks = works.slice(0, recentWorksLimit);
-    
+
     // Count all tags across recent works only
     const tagCounts = {};
-    
+
     recentWorks.forEach(work => {
       // Count relationships
       if (work.relationships) {
@@ -328,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       // Get the most popular tag
-      const [mostPopularTag, count] = sortedTags[0];
+      const [mostPopularTag] = sortedTags[0];
 
       // Create summary element
       const summaryDiv = document.createElement('div');
@@ -380,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       filteredWorks = allWorks.filter(work => {
         const matchingTags = [];
-        
+
         // Check specific tag types and collect matches (skip general 'tags' as they include everything)
         if (work.relationships) {
           work.relationships.forEach(rel => {
@@ -412,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const start = Math.max(0, queryIndex - 50);
           const end = Math.min(work.summary.length, queryIndex + query.length + 50);
           summaryMatch = work.summary.substring(start, end);
-          
+
           // Add ellipsis if we truncated
           if (start > 0) summaryMatch = '...' + summaryMatch;
           if (end < work.summary.length) summaryMatch = summaryMatch + '...';
@@ -441,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Apply fandom filter to the filtered works
     let worksToDisplay = [...filteredWorks];
     if (selectedFandom) {
-      worksToDisplay = worksToDisplay.filter(work => 
+      worksToDisplay = worksToDisplay.filter(work =>
         work.fandoms.includes(selectedFandom)
       );
     }
@@ -461,6 +462,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (works.length === 0) {
       worksList.style.display = 'none';
       noResults.style.display = 'block';
+      // Remove narrow search message when there are no results
+      const existingMessage = document.getElementById('narrow-search-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
       return;
     }
 
@@ -512,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
       messageDiv.innerHTML = `
         <p>Showing ${maxResults} of ${works.length} results. <strong>Narrow your search</strong> to see more specific matches.</p>
       `;
-      
+
       // Insert after the works-list div
       worksList.parentNode.insertBefore(messageDiv, worksList.nextSibling);
     } else {
@@ -545,17 +551,17 @@ document.addEventListener('DOMContentLoaded', function () {
   let lastAO3TabCount = null; // Track the last known tab count (null = not initialized)
 
   function updateAO3TabStatus() {
-    browser.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, function (ao3Tabs) {
+    chrome.tabs.query({url: `*://${AO3_BASE_URL.replace('https://', '')}/*`}, function (ao3Tabs) {
       const instructionsContent = instructions.querySelector('.welcome-content');
       if (!instructionsContent) return;
 
       const currentTabCount = ao3Tabs ? ao3Tabs.length : 0;
-      
+
       // Only update if the tab count has changed (always run on first check)
       if (lastAO3TabCount !== null && currentTabCount === lastAO3TabCount) {
         return;
       }
-      
+
       lastAO3TabCount = currentTabCount;
 
       // Remove existing status hint
@@ -574,7 +580,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ✅ Found ${ao3Tabs.length} AO3 tab${ao3Tabs.length > 1 ? 's' : ''}!
           </div>
           <div class="status-hint-text">
-            Will automatically use the first tab where you're logged in.
+            Will use the first tab where you're logged in.
           </div>
         `;
       } else {
@@ -590,12 +596,12 @@ document.addEventListener('DOMContentLoaded', function () {
             Open AO3
           </button>
         `;
-        
+
         // Add event listener to the Open AO3 button
         const openAO3Btn = statusHint.querySelector('#open-ao3-btn');
         if (openAO3Btn) {
           openAO3Btn.addEventListener('click', () => {
-            browser.tabs.create({url: AO3_BASE_URL});
+            chrome.tabs.create({url: AO3_BASE_URL});
           });
         }
       }
@@ -606,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Initial check for AO3 tabs
   updateAO3TabStatus();
-  
+
   // Check every few seconds for new tabs
   setInterval(updateAO3TabStatus, 3000);
 });

@@ -9,7 +9,7 @@ function getUsername() {
   const greetingLink = document.querySelector('#greeting .user a[href*="/users/"]');
   if (greetingLink) {
     const href = greetingLink.getAttribute('href');
-    const match = href.match(/\/users\/([^\/]+)/);
+    const match = href.match(/\/users\/([^/]+)/);
     return match ? match[1] : null;
   }
   return null;
@@ -20,7 +20,7 @@ function scrapeHistoryFromPage(doc) {
   const works = [];
   const workItems = doc.querySelectorAll('ol.reading li.work');
 
-  workItems.forEach((item, index) => {
+  workItems.forEach((item, _index) => {
     const titleLink = item.querySelector('h4.heading a[href*="/works/"]');
     const authorLink = item.querySelector('h4.heading a[rel="author"]');
     const fandomLinks = item.querySelectorAll('h5.fandoms a.tag');
@@ -136,7 +136,7 @@ async function fetchMultiplePages(username, maxPagesToFetch = 10) {
 }
 
 // Function to handle messages from popup/extension page
-browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === 'getUsername') {
     // Just return the username if logged in
@@ -171,7 +171,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.error('Error getting total pages:', error);
         sendResponse({ error: 'Failed to get total pages' });
       });
-    
+
     return true; // Keep the message channel open for async response
   }
 
@@ -196,9 +196,9 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
       try {
         const result = await fetchMultiplePages(username, maxPages);
-        sendResponse({ 
-          works: result.works, 
-          username, 
+        sendResponse({
+          works: result.works,
+          username,
           totalWorks: result.works.length,
           totalPages: result.totalPages
         });
