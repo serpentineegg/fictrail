@@ -58,34 +58,20 @@ jobs:
         unzip -l fictrail-v${{ steps.get_version.outputs.version }}.zip
         
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: FicTrail v${{ steps.get_version.outputs.version }}
-        body: |
-          ## FicTrail v${{ steps.get_version.outputs.version }}
-          
-          ### Installation
-          1. Download the ZIP file below
-          2. Extract it to a folder on your computer
-          3. Open Firefox and go to `about:debugging`
-          4. Click "This Firefox" → "Load Temporary Add-on..."
-          5. Select `manifest.json` from the extracted folder
-          
-          ### Changes
-          See the commit history for detailed changes in this release.
-        draft: false
-        prerelease: false
-        
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./fictrail-v${{ steps.get_version.outputs.version }}.zip
-        asset_name: fictrail-v${{ steps.get_version.outputs.version }}.zip
-        asset_content_type: application/zip
+      run: |
+        gh release create v${{ steps.get_version.outputs.version }} \
+          --title "FicTrail v${{ steps.get_version.outputs.version }}" \
+          --notes "## FicTrail v${{ steps.get_version.outputs.version }}
+
+        ### Installation
+        1. Download the ZIP file below
+        2. Extract it to a folder on your computer
+        3. Open Firefox and go to \`about:debugging\`
+        4. Click \"This Firefox\" → \"Load Temporary Add-on...\"
+        5. Select \`manifest.json\` from the extracted folder
+
+        ### Changes
+        See the commit history for detailed changes in this release." \
+          ./fictrail-v${{ steps.get_version.outputs.version }}.zip
