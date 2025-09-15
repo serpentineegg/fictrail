@@ -37,6 +37,33 @@ jobs:
         echo "Updated manifest.json version to ${{ steps.get_version.outputs.version }}"
         cat manifest.json | grep version
         
+    - name: Create PR for version update
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Create a new branch for the version update
+        BRANCH_NAME="version-bump-${{ steps.get_version.outputs.version }}"
+        git checkout -b $BRANCH_NAME
+        
+        # Commit the version change
+        git add manifest.json
+        git commit -m "Bump version to ${{ steps.get_version.outputs.version }}"
+        
+        # Push the branch
+        git push origin $BRANCH_NAME
+        
+        # Create pull request
+        gh pr create \
+          --title "Bump version to ${{ steps.get_version.outputs.version }}" \
+          --body "Automated version bump from release workflow.
+          
+        This PR updates the manifest.json version to match the released tag v${{ steps.get_version.outputs.version }}." \
+          --base main \
+          --head $BRANCH_NAME
+        
     - name: Create distribution directory
       run: mkdir -p dist
       
