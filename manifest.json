@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FicTrail",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "description": "AO3 history search extension",
   
   "browser_specific_settings": {
