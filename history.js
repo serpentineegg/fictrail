@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // DOM elements
   const loadBtn = document.getElementById('load-history-btn');
   const loading = document.getElementById('loading');
-  // const loadingMessage = document.getElementById('loading-message');
   const error = document.getElementById('error');
   const errorMessage = document.getElementById('error-message');
   const navigateBtn = document.getElementById('navigate-btn');
@@ -24,12 +23,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // Page selector elements
   const pageSelector = document.getElementById('page-selector');
   const pagesSlider = document.getElementById('pages-slider');
-  // const pagesValue = document.getElementById('pages-value');
 
 
   let allWorks = [];
   let filteredWorks = [];
-  // let currentUsername = '';
 
   // Initialize event listeners
   loadBtn.addEventListener('click', loadHistory);
@@ -254,7 +251,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Store works globally
     allWorks = works;
     filteredWorks = [...works];
-    // currentUsername = username;
 
     // Update header with username and all stats
     const workCount = totalWorks || works.length;
