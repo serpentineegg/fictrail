@@ -7,10 +7,14 @@
     "lint:fix": "eslint *.js --fix"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
-    "@eslint/js": "^9.0.0"
+    "@eslint/js": "^9.0.0",
+    "eslint": "^8.57.0"
   },
-  "keywords": ["browser-extension", "ao3", "fanfiction"],
+  "keywords": [
+    "browser-extension",
+    "ao3",
+    "fanfiction"
+  ],
   "author": "Seprentine Egg",
   "license": "MIT"
 }
