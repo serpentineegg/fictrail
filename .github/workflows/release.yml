@@ -1,0 +1,91 @@
+name: Build and Release Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Extract version from tag
+      id: get_version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+        
+    - name: Update manifest version
+      run: |
+        sed -i 's/"version": "[^"]*"/"version": "${{ steps.get_version.outputs.version }}"/' manifest.json
+        echo "Updated manifest.json version to ${{ steps.get_version.outputs.version }}"
+        cat manifest.json | grep version
+        
+    - name: Create distribution directory
+      run: mkdir -p dist
+      
+    - name: Copy extension files to dist
+      run: |
+        cp manifest.json dist/
+        cp background.js dist/
+        cp content.js dist/
+        cp history.html dist/
+        cp history.js dist/
+        cp page-styles.css dist/
+        
+    - name: Create ZIP file
+      run: |
+        cd dist
+        zip -r ../fictrail-v${{ steps.get_version.outputs.version }}.zip .
+        cd ..
+        
+    - name: Verify ZIP contents
+      run: |
+        echo "ZIP file contents:"
+        unzip -l fictrail-v${{ steps.get_version.outputs.version }}.zip
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: FicTrail v${{ steps.get_version.outputs.version }}
+        body: |
+          ## FicTrail v${{ steps.get_version.outputs.version }}
+          
+          ### Installation
+          1. Download the ZIP file below
+          2. Extract it to a folder on your computer
+          3. Open Firefox and go to `about:debugging`
+          4. Click "This Firefox" → "Load Temporary Add-on..."
+          5. Select `manifest.json` from the extracted folder
+          
+          ### Changes
+          See the commit history for detailed changes in this release.
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./fictrail-v${{ steps.get_version.outputs.version }}.zip
+        asset_name: fictrail-v${{ steps.get_version.outputs.version }}.zip
+        asset_content_type: application/zip
