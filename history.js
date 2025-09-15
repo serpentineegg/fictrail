@@ -51,6 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (tagValue) {
         searchInput.value = tagValue;
         performSearch();
+        // Scroll to the search section
+        document.querySelector('.history-controls').scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
       }
     }
   });
@@ -160,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // No logged-in users found
       showError(
-        '<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account in one of your open tabs. We need access to your reading history!',
+        '<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account in one of your open tabs. We need access to your history!',
         true,
         `${AO3_BASE_URL}/users/login`,
         'Log Me In'
@@ -184,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
       pagesToLoad = getPagesToLoad();
     } else {
       // For initial load, first get total pages to set appropriate default
-      showLoading('Checking your reading history...');
+      showLoading('Checking your history...');
       
       try {
         const totalPagesResponse = await new Promise((resolve) => {
@@ -210,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
     
-    const loadingMessage = `Collecting ${pagesToLoad} pages of ${username}'s reading history...`;
+    const loadingMessage = `Collecting ${pagesToLoad} pages of ${username}'s history...`;
     
     showLoading(loadingMessage);
     
@@ -461,6 +466,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (works.length === 0) {
       worksList.style.display = 'none';
       noResults.style.display = 'block';
+      // Remove narrow search message when there are no results
+      const existingMessage = document.getElementById('narrow-search-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
       return;
     }
 
@@ -574,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ✅ Found ${ao3Tabs.length} AO3 tab${ao3Tabs.length > 1 ? 's' : ''}!
           </div>
           <div class="status-hint-text">
-            Will automatically use the first tab where you're logged in.
+            Will use the first tab where you're logged in.
           </div>
         `;
       } else {
