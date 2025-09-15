@@ -43,6 +43,6 @@ module.exports = [
   },
   {
     files: ['*.js'],
-    ignores: ['node_modules/**']
+    ignores: ['node_modules/**', 'build/**']
   }
 ];

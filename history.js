@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
             await loadFromTab(tab, response.username);
             return;
           }
-        } catch (error) {
+        } catch {
           // Tab check failed, continue to next tab
           continue;
         }
