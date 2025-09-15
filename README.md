@@ -32,5 +32,5 @@ All data processing happens locally in your browser. We don't collect, store, or
 ## Support
 
 Love this extension? Consider:
-- 🐛 Reporting bugs or suggesting features via GitHub Issues
+- 🐛 [Reporting bugs or suggesting features via GitHub Issues](https://github.com/serpentineegg/fictrail/issues)
 - ☕ [Buying me the meanest dark roast](https://ko-fi.com/serpentineegg)
