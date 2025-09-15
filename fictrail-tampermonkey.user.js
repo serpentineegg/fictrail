@@ -478,23 +478,22 @@
         }
         
         .fictrail-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #3b82f6;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         .fictrail-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: #3b82f6;
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
     `);
 
@@ -516,7 +515,6 @@
             font-weight: 600;
             cursor: pointer;
             z-index: 9999;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
             transition: all 0.2s ease;
         `;
 
