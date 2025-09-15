@@ -11,7 +11,7 @@ Built with flaming love for the AO3 community.
 Since this extension isn't on the Mozilla Add-ons store yet, you'll need to install it manually.
 
 1. **Download the Extension**
-   - Clone this repository or download it as a ZIP file
+   - [Download ZIP file](https://github.com/serpentineegg/fictrail/archive/refs/heads/main.zip) of the latest source code
    - Extract the files to a folder on your computer
 
 2. **Load the Extension**
