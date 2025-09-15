@@ -1,7 +1,7 @@
 // Background script - runs when extension loads
 
 // Listen for when extension icon is clicked
-browser.browserAction.onClicked.addListener((tab) => {
+browser.browserAction.onClicked.addListener((_tab) => {
 
   // Open the history viewer page
   browser.tabs.create({
