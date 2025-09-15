@@ -1,0 +1,82 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Create XPI package
+      run: |
+        # Create a clean build directory
+        mkdir -p build
+        
+        # Copy only the extension files (exclude dev files)
+        cp manifest.json build/
+        cp *.js build/
+        cp *.html build/
+        cp *.css build/
+        
+        # Create the XPI file (which is just a ZIP with .xpi extension)
+        cd build
+        zip -r ../fictrail-${{ github.ref_name }}.xpi .
+        cd ..
+        
+        # Also create a generic version for latest
+        cp fictrail-${{ github.ref_name }}.xpi fictrail-latest.xpi
+        
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          fictrail-${{ github.ref_name }}.xpi
+          fictrail-latest.xpi
+        body: |
+          ## Installation
+          
+          ### Easy Install (Recommended)
+          1. Download `fictrail-${{ github.ref_name }}.xpi` below
+          2. Open Firefox and go to `about:addons`
+          3. Click the gear icon and select "Install Add-on From File..."
+          4. Select the downloaded XPI file
+          
+          ### Manual Install
+          1. Download and extract the source code
+          2. Go to `about:debugging` in Firefox
+          3. Click "Load Temporary Add-on..."
+          4. Select `manifest.json` from the extracted folder
+          
+          ## What's New
+          - Check the commit history for detailed changes
+          
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: fictrail-xpi
+        path: |
+          fictrail-*.xpi
