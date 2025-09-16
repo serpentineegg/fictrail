@@ -31,9 +31,9 @@ jobs:
     - name: Update version in header
       run: |
         # Update userscript version in source
-        sed -i "s/@version      [0-9.-]*[a-z]*/@version      ${{ steps.get_version.outputs.version }}/" src/header.js
+        sed -i "s/@version      [0-9.-]*[a-z]*/@version      ${{ steps.get_version.outputs.version }}/" src/userscript-header.txt
         echo "Updated userscript version to ${{ steps.get_version.outputs.version }}"
-        grep "@version" src/header.js
+        grep "@version" src/userscript-header.txt
         
     - name: Build userscript
       run: |
