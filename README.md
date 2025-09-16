@@ -16,7 +16,7 @@ Built with flaming love for the AO3 community.
    - Tampermonkey will automatically detect the userscript and prompt you to install it
 
 3. **Start Using FicTrail**
-   - Visit any AO3 page while logged in
+   - Visit any [AO3 page](https://archiveofourown.org/) while logged in
    - Look for the floating "FicTrail" button
    - Click it to open your reading history and start searching!
 
