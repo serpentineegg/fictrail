@@ -52,7 +52,7 @@ jobs:
         ### Installation
         1. Install [Tampermonkey](https://www.tampermonkey.net/) browser extension
         2. Click on the userscript file below to install it
-        3. Visit any AO3 page and click the FicTrail button to start using it
+        3. Visit any [AO3 page](https://archiveofourown.org/) and click the FicTrail button to start using it
 
         ### Changes
         See the commit history for detailed changes in this release." \
