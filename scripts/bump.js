@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
 const { execSync } = require('child_process');
 
 const BUMP_TYPES = {
@@ -61,40 +60,24 @@ function bumpVersion(currentVersion, bumpType) {
   return `${version.major}.${version.minor}.${version.patch}`;
 }
 
-function updatePackageJson(newVersion) {
+function createTag(newVersion) {
   try {
-    const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-    packageJson.version = newVersion;
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2) + '\n');
-    console.log(`📦 Updated package.json to v${newVersion}`);
+    console.log(`🏷️  Creating git tag v${newVersion}...`);
+    execSync(`git tag v${newVersion}`, { stdio: 'inherit' });
+    console.log(`✅ Created git tag v${newVersion}`);
   } catch (error) {
-    console.error('❌ Error updating package.json:', error.message);
+    console.error('❌ Error creating tag:', error.message);
     process.exit(1);
   }
 }
 
-function runCommand(command, description) {
+function pushTag(newVersion) {
   try {
-    console.log(`🔄 ${description}...`);
-    execSync(command, { stdio: 'inherit' });
-    console.log(`✅ ${description} completed`);
+    console.log(`📤 Pushing tag v${newVersion}...`);
+    execSync(`git push origin v${newVersion}`, { stdio: 'inherit' });
+    console.log(`✅ Pushed tag v${newVersion}`);
   } catch (error) {
-    console.error(`❌ Error during ${description.toLowerCase()}:`, error.message);
-    process.exit(1);
-  }
-}
-
-function checkGitStatus() {
-  try {
-    const status = execSync('git status --porcelain', { encoding: 'utf8' });
-    if (status.trim()) {
-      console.error('❌ Working directory is not clean. Please commit or stash changes first.');
-      console.log('\nUncommitted changes:');
-      console.log(status);
-      process.exit(1);
-    }
-  } catch (error) {
-    console.error('❌ Error checking git status:', error.message);
+    console.error('❌ Error pushing tag:', error.message);
     process.exit(1);
   }
 }
@@ -110,13 +93,12 @@ function main() {
     console.log('  minor   - 1.0.0 → 1.1.0 (new features)');
     console.log('  patch   - 1.0.0 → 1.0.1 (bug fixes)');
     console.log('  bugfix  - alias for patch');
+    console.log('\nNote: This script only creates and pushes git tags.');
+    console.log('It does not modify package.json or commit any code changes.');
     process.exit(1);
   }
 
-  console.log(`🚀 Starting ${bumpType} version bump...`);
-
-  // Check git status
-  checkGitStatus();
+  console.log(`🚀 Creating ${bumpType} version tag...`);
 
   // Get current version
   const currentVersion = getCurrentVersion();
@@ -126,22 +108,11 @@ function main() {
   const newVersion = bumpVersion(currentVersion, bumpType);
   console.log(`📈 New version: ${newVersion}`);
 
-  // Update package.json
-  updatePackageJson(newVersion);
-
-  // Build the project
-  runCommand('npm run build', 'Building project');
-
-  // Commit changes
-  runCommand('git add package.json dist/', 'Staging files');
-  runCommand(`git commit -m "chore: bump version to v${newVersion}"`, 'Committing version bump');
-
   // Create and push tag
-  runCommand(`git tag v${newVersion}`, 'Creating git tag');
-  runCommand('git push origin main', 'Pushing to main branch');
-  runCommand(`git push origin v${newVersion}`, 'Pushing tag');
+  createTag(newVersion);
+  pushTag(newVersion);
 
-  console.log(`🎉 Successfully released v${newVersion}!`);
+  console.log(`🎉 Successfully created and pushed tag v${newVersion}!`);
   console.log('🔗 GitHub Actions will now build and create the release automatically.');
   console.log(`📦 Release will be available at: https://github.com/serpentineegg/fictrail/releases/tag/v${newVersion}`);
 }
