@@ -1,0 +1,10 @@
+// ==UserScript==
+// @name         FicTrail - AO3 History Viewer
+// @namespace    https://github.com/serpentineegg/fictrail
+// @version      0.0.0-dev
+// @description  AO3 history search and filtering tool
+// @author       serpentineegg
+// @match        *://archiveofourown.org/*
+// @grant        GM_addStyle
+// @run-at       document-idle
+// ==/UserScript==

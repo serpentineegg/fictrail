@@ -1,4 +1,4 @@
-name: Build and Release Extension
+name: Release Userscript
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  release:
     runs-on: ubuntu-latest
     
     steps:
@@ -21,9 +21,6 @@ jobs:
       with:
         node-version: '20'
         
-    - name: Install dependencies
-      run: npm ci
-      
     - name: Extract version from tag
       id: get_version
       run: |
@@ -31,34 +28,18 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Version: $VERSION"
         
-    - name: Update manifest version
+    - name: Update version in header
       run: |
-        sed -i 's/"version": "[^"]*"/"version": "${{ steps.get_version.outputs.version }}"/' manifest.json
-        echo "Updated manifest.json version to ${{ steps.get_version.outputs.version }}"
-        cat manifest.json | grep version
+        # Update userscript version in source
+        sed -i "s/@version      [0-9.-]*[a-z]*/@version      ${{ steps.get_version.outputs.version }}/" src/header.js
+        echo "Updated userscript version to ${{ steps.get_version.outputs.version }}"
+        grep "@version" src/header.js
         
-    - name: Create distribution directory
-      run: mkdir -p dist
-      
-    - name: Copy extension files to dist
+    - name: Build userscript
       run: |
-        cp manifest.json dist/
-        cp background.js dist/
-        cp content.js dist/
-        cp history.html dist/
-        cp history.js dist/
-        cp page-styles.css dist/
-        
-    - name: Create ZIP file
-      run: |
-        cd dist
-        zip -r ../fictrail-v${{ steps.get_version.outputs.version }}.zip .
-        cd ..
-        
-    - name: Verify ZIP contents
-      run: |
-        echo "ZIP file contents:"
-        unzip -l fictrail-v${{ steps.get_version.outputs.version }}.zip
+        node build.js
+        echo "Built userscript successfully"
+        ls -la dist/
         
     - name: Create Release
       env:
@@ -69,12 +50,10 @@ jobs:
           --notes "## FicTrail v${{ steps.get_version.outputs.version }}
 
         ### Installation
-        1. Download the ZIP file below
-        2. Extract it to a folder on your computer
-        3. Open Firefox and go to \`about:debugging\`
-        4. Click \"This Firefox\" → \"Load Temporary Add-on...\"
-        5. Select \`manifest.json\` from the extracted folder
+        1. Install [Tampermonkey](https://www.tampermonkey.net/) browser extension
+        2. Click on the userscript file below to install it
+        3. Visit any AO3 page and click the FicTrail button to start using it
 
         ### Changes
         See the commit history for detailed changes in this release." \
-          ./fictrail-v${{ steps.get_version.outputs.version }}.zip
+          ./dist/fictrail.user.js
