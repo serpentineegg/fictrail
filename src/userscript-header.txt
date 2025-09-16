@@ -7,4 +7,5 @@
 // @match        *://archiveofourown.org/*
 // @grant        GM_addStyle
 // @run-at       document-idle
+// @license      MIT
 // ==/UserScript==
