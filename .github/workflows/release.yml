@@ -56,4 +56,5 @@ jobs:
 
         ### Changes
         See the commit history for detailed changes in this release." \
-          ./dist/fictrail.user.js
+          ./dist/fictrail.user.js \
+          ./dist/script-info.md
