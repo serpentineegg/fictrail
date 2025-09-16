@@ -220,6 +220,9 @@
             box-shadow: none !important;
             -webkit-box-shadow: none !important;
             -moz-box-shadow: none !important;
+            height: 42px;
+            line-height: 1.2;
+            box-sizing: border-box;
         }
         
         .fictrail-filter select {
@@ -231,6 +234,8 @@
             cursor: pointer;
             outline: none;
             width: 200px;
+            height: 42px;
+            line-height: 1.2;
         }
         
         .fictrail-works {
