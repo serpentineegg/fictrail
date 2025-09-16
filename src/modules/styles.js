@@ -1,7 +1,7 @@
 // Styles Module - All CSS styling for FicTrail
 
 function addStyles() {
-  GM_addStyle(`
+  const css = `
         /* FicTrail Styles */
         #fictrail-overlay {
             position: fixed;
@@ -469,5 +469,14 @@ function addStyles() {
             cursor: pointer;
             border: none;
         }
-    `);
+    `;
+
+  // Use GM_addStyle if available, otherwise fallback to creating style element
+  if (typeof GM_addStyle !== 'undefined') {
+    GM_addStyle(css);
+  } else {
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
 }
