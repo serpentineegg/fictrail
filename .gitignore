@@ -35,6 +35,9 @@ yarn-error.log*
 node_modules/
 yarn.lock
 
+# Build artifacts
+dist/
+
 # Temporary files
 *.tmp
 *.temp

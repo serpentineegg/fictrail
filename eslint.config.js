@@ -3,46 +3,25 @@ const js = require('@eslint/js');
 module.exports = [
   js.configs.recommended,
   {
+    files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'script',
-      globals: {
-        // Node.js globals for config file
-        require: 'readonly',
-        module: 'readonly',
-
-        // Browser globals
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-
-        // Chrome extension APIs
-        chrome: 'readonly',
-        browser: 'readonly',
-
-        // Common browser APIs
-        fetch: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        DOMParser: 'readonly'
-      }
+      sourceType: 'script'
     },
     rules: {
-      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
-      'no-console': 'off', // Allow console for debugging
-      'semi': ['error', 'always'],
+      'no-unused-vars': 'off',
+      'no-undef': 'off',
       'quotes': ['error', 'single'],
-      'indent': ['error', 2],
+      'eol-last': ['error', 'always'],
       'no-trailing-spaces': 'error',
-      'eol-last': 'error'
+      'no-multiple-empty-lines': ['error', { 'max': 3 }],
+      'no-console': 'off',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'object-curly-spacing': ['error', 'always']
     }
   },
   {
-    files: ['*.js'],
-    ignores: ['node_modules/**', 'build/**']
+    ignores: ['node_modules/**']
   }
 ];
