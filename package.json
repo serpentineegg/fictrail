@@ -7,7 +7,12 @@
     "dev": "node build.js && echo 'Build complete - check dist/fictrail.user.js'",
     "watch": "nodemon --watch src --exec 'npm run build'",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "bump:major": "node scripts/bump.js major",
+    "bump:minor": "node scripts/bump.js minor",
+    "bump:patch": "node scripts/bump.js patch",
+    "bump:bugfix": "node scripts/bump.js bugfix",
+    "version": "node scripts/version.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
