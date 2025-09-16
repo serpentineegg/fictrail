@@ -80,6 +80,18 @@ ${combinedContent}
   // Write the final userscript
   writeFile(BUILD_CONFIG.outputFile, wrappedContent);
 
+  // Copy script-info.md to dist
+  const scriptInfoSourcePath = './script-info.md';
+  const scriptInfoDistPath = './dist/script-info.md';
+
+  if (fs.existsSync(scriptInfoSourcePath)) {
+    const scriptInfoContent = readFile(scriptInfoSourcePath);
+    writeFile(scriptInfoDistPath, scriptInfoContent);
+    console.log(`📋 Copied script info: ${scriptInfoDistPath}`);
+  } else {
+    console.warn(`⚠️  Warning: ${scriptInfoSourcePath} not found, skipping script-info.md creation`);
+  }
+
   console.log('🎉 Build completed successfully!');
   console.log(`📄 Output: ${BUILD_CONFIG.outputFile}`);
 
