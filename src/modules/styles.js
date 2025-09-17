@@ -65,7 +65,7 @@ function addStyles() {
         }
         
         .fictrail-header {
-            padding: 24px 40px 20px 40px;
+            padding: 24px 24px 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -163,16 +163,17 @@ function addStyles() {
         }
         
         .fictrail-history {
-            padding: 40px;
+            padding: 20px;
+            padding-top: 20px;
             padding-bottom: 0px;
         }
         
         .fictrail-controls {
             display: flex;
             gap: 20px;
-            align-items: flex-end;
+            align-items: flex-start;
             flex-wrap: wrap;
-            margin-bottom: 32px;
+            margin-bottom: 20px;
         }
         
         .fictrail-search {
@@ -193,6 +194,13 @@ function addStyles() {
             height: 42px;
             line-height: 1.2;
             box-sizing: border-box;
+        }
+        
+        .fictrail-results-count {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #718096;
+            font-weight: 500;
         }
         
         .fictrail-filter select {

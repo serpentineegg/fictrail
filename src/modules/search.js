@@ -8,6 +8,9 @@ function performSearch() {
       work.matchingTags = [];
       work.matchingSummary = null;
     });
+    // Apply filter which will show the count
+    applyFilter();
+    return;
   } else {
     filteredWorks = allWorks.filter(work => {
       const matchingTags = [];
@@ -66,6 +69,7 @@ function performSearch() {
 
 function applyFilter() {
   const selectedFandom = document.getElementById('fictrail-fandom-filter').value;
+  const query = document.getElementById('fictrail-search-input').value.toLowerCase().trim();
 
   let worksToDisplay = [...filteredWorks];
   if (selectedFandom) {
@@ -81,7 +85,21 @@ function applyFilter() {
     return 0;
   });
 
+  // Show results count
+  updateResultsCount(worksToDisplay.length);
   displayWorks(worksToDisplay);
+}
+
+function updateResultsCount(count) {
+  const resultsCountElement = document.getElementById('fictrail-results-count');
+  if (resultsCountElement) {
+    if (count > 0) {
+      resultsCountElement.textContent = `${count} result${count === 1 ? '' : 's'}`;
+      resultsCountElement.style.display = 'block';
+    } else {
+      resultsCountElement.style.display = 'none';
+    }
+  }
 }
 
 function populateFandomFilter(works) {

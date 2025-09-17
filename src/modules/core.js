@@ -151,6 +151,7 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
   addFavoriteTagsSummary(works);
 
   populateFandomFilter(works);
+  updateResultsCount(works.length);
   displayWorks(works);
 }
 

@@ -74,6 +74,7 @@ function createOverlay() {
                           <div class="fictrail-controls">
                               <div class="fictrail-search">
                                   <input type="text" id="fictrail-search-input" placeholder="Search by fandoms, titles, tags, authors, or summaries...">
+                                  <div id="fictrail-results-count" class="fictrail-results-count" style="display: none;"></div>
                               </div>
                               <div class="fictrail-filter">
                                   <select id="fictrail-fandom-filter">
