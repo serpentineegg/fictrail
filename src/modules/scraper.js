@@ -139,7 +139,7 @@ async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
       // Propagate to caller so UI can show proper login prompt
       throw error;
     }
-    return {works: [], totalPages: 1};
+    return { works: [], totalPages: 1 };
   }
 
   const pagesToFetch = Math.min(maxPagesToFetch, totalPages);
@@ -153,5 +153,5 @@ async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  return {works: works, totalPages: totalPages};
+  return { works: works, totalPages: totalPages };
 }
