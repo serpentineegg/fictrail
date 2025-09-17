@@ -339,6 +339,7 @@ function addStyles() {
         }
         
         .fictrail-tag-match {
+            position: relative;
             display: inline-block;
             padding: 2px 6px;
             margin: 2px;
@@ -346,6 +347,82 @@ function addStyles() {
             font-size: 12px;
             font-weight: 500;
             cursor: pointer;
+        }
+        
+        /* Tooltip text hidden by default */
+        .fictrail-tag-match::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #1f2937;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 1000;
+            
+            /* Initially hidden */
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            
+            /* Pointer events to prevent interference */
+            pointer-events: none;
+        }
+        
+        /* Tooltip arrow */
+        .fictrail-tag-match::before {
+            content: "";
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1f2937;
+            z-index: 1000;
+            
+            /* Initially hidden */
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            
+            /* Pointer events to prevent interference */
+            pointer-events: none;
+        }
+        
+        /* Show tooltip on hover and focus */
+        .fictrail-tag-match:hover::after,
+        .fictrail-tag-match:hover::before,
+        .fictrail-tag-match:focus::after,
+        .fictrail-tag-match:focus::before {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Make tags focusable for keyboard accessibility */
+        .fictrail-tag-match {
+            outline: none;
+            tabindex: 0;
+        }
+        
+        /* Darker colors on focus for better visibility */
+        .fictrail-tag-relationship:focus {
+            background: #fde047;
+            color: #b45309;
+        }
+        
+        .fictrail-tag-character:focus {
+            background: #bbf7d0;
+            color: #15803d;
+        }
+        
+        .fictrail-tag-freeform:focus {
+            background: #c7d2fe;
+            color: #3730a3;
         }
         
         .fictrail-tag-relationship {
@@ -439,7 +516,6 @@ function addStyles() {
             margin: 0;
             line-height: 1.5;
         }
-        
         
         .fictrail-slider-container {
             display: flex;

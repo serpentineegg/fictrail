@@ -28,7 +28,7 @@ function scrapeHistoryFromPage(doc) {
     const titleLink = item.querySelector('h4.heading a[href*="/works/"]');
     const authorLink = item.querySelector('h4.heading a[rel="author"]');
     const fandomLinks = item.querySelectorAll('h5.fandoms a.tag');
-    const lastVisited = item.querySelector('.viewed .text, .viewed span');
+    const lastVisitedEl = item.querySelector('h4.viewed.heading');
     const summaryEl = item.querySelector('.userstuff.summary');
     const wordsEl = item.querySelector('.stats dd.words');
     const chaptersEl = item.querySelector('.stats dd.chapters');
@@ -36,6 +36,17 @@ function scrapeHistoryFromPage(doc) {
     const tagsEl = item.querySelector('.tags.commas');
 
     if (titleLink) {
+      // Extract last visited date from the h4.viewed.heading element
+      let lastVisited = '';
+      if (lastVisitedEl) {
+        // Get the full text content and extract the date
+        const fullText = lastVisitedEl.textContent;
+        // Match pattern: "Last visited: DD MMM YYYY" or similar
+        const dateMatch = fullText.match(/Last visited:\s*([^(]+)/);
+        if (dateMatch) {
+          lastVisited = dateMatch[1].trim();
+        }
+      }
 
       const work = {
         title: titleLink.textContent.trim(),
@@ -43,7 +54,7 @@ function scrapeHistoryFromPage(doc) {
         author: authorLink ? authorLink.textContent.trim() : 'Anonymous',
         authorUrl: authorLink ? AO3_BASE_URL + authorLink.getAttribute('href') : null,
         fandoms: Array.from(fandomLinks).map(link => link.textContent.trim()),
-        lastVisited: lastVisited ? lastVisited.textContent.replace(/Last visited:\s*/, '').trim() : '',
+        lastVisited: lastVisited,
         summary: summaryEl ? extractTextWithLineBreaks(summaryEl) : '',
         words: wordsEl ? wordsEl.textContent.trim() : '',
         chapters: chaptersEl ? chaptersEl.textContent.trim() : '',

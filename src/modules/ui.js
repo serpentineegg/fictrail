@@ -233,29 +233,60 @@ function displayWorks(works, append = false) {
   // Calculate starting index for work numbers
   const startIndex = append ? worksList.children.length : 0;
 
-  const worksHTML = worksToShow.slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0).map((work, index) => `
-          <div class="fictrail-work">
-              <div class="fictrail-work-header">
-                  <h3><a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a></h3>
-                  <span class="fictrail-work-number">#${startIndex + index + 1}</span>
-              </div>
-              <p class="fictrail-author">by ${work.authorUrl ? `<a href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}</p>
-              ${work.fandoms.length > 0 ? `<p class="fictrail-fandoms">${work.fandoms.map(f => escapeHtml(f)).join(', ')}</p>` : ''}
-              ${work.matchingTags && work.matchingTags.length > 0 ? `<div class="fictrail-matching-section">
-                  <strong>Matching tags:</strong> ${work.matchingTags.map(tag => `<span class="fictrail-tag-match fictrail-tag-${tag.type}" title="${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} tag" data-tag-value="${escapeHtml(tag.value)}">${escapeHtml(tag.value)}</span>`).join('')}
-              </div>` : ''}
-              ${work.matchingSummary ? `<div class="fictrail-matching-section">
-                  <strong>Matching summary:</strong> ${escapeHtml(work.matchingSummary)}
-              </div>` : ''}
-              <div class="fictrail-metadata">
-                  ${work.words ? `<span>${escapeHtml(work.words)} words</span>` : ''}
-                  ${work.chapters ? `<span>${escapeHtml(work.chapters)} chapters</span>` : ''}
-                  ${work.publishDate ? `<span>Published: ${escapeHtml(work.publishDate)}</span>` : ''}
-              </div>
-              ${work.lastVisited ? `<p class="fictrail-last-visited">Last visited: ${escapeHtml(work.lastVisited)}</p>` : ''}
-              ${work.summary && !work.matchingSummary ? `<div class="fictrail-summary">${escapeHtml(work.summary).replace(/\n/g, '<br>')}</div>` : ''}
-          </div>
-      `).join('');
+  const worksHTML = worksToShow
+    .slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0)
+    .map((work, index) => `
+        <div class="fictrail-work">
+            <div class="fictrail-work-header">
+                <h3>
+                    <a href="${work.url}" target="_blank" rel="noopener">
+                        ${escapeHtml(work.title)}
+                    </a>
+                </h3>
+                <span class="fictrail-work-number">#${startIndex + index + 1}</span>
+            </div>
+
+            <p class="fictrail-author">
+                by ${work.authorUrl ? `<a href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}
+            </p>
+
+            ${work.fandoms.length > 0 ? `<p class="fictrail-fandoms">
+                    ${work.fandoms.map(f => escapeHtml(f)).join(', ')}
+                   </p>` : ''}
+            
+            ${work.matchingTags && work.matchingTags.length > 0 ? `<div class="fictrail-matching-section">
+                    <strong>Matching tags:</strong> 
+                    ${work.matchingTags.map(tag => `<span class="fictrail-tag-match fictrail-tag-${tag.type}" 
+                               data-tooltip="${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} tag" 
+                               data-tag-value="${escapeHtml(tag.value)}" 
+                               tabindex="0" 
+                               role="button" 
+                               aria-label="${escapeHtml(tag.value)} - ${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} tag">
+                            ${escapeHtml(tag.value)}
+                        </span>`).join('')}
+                   </div>` : ''}
+               
+            ${work.matchingSummary ? `<div class="fictrail-matching-section">
+                    <strong>Matching summary:</strong> 
+                    ${escapeHtml(work.matchingSummary)}
+                   </div>` : ''}
+
+            <div class="fictrail-metadata">
+                ${work.words ? `<span>${escapeHtml(work.words)} words</span>` : ''}
+                ${work.chapters ? `<span>${escapeHtml(work.chapters)} chapters</span>` : ''}
+                ${work.publishDate ? `<span>Published: ${escapeHtml(work.publishDate)}</span>` : ''}
+            </div>
+
+            ${work.lastVisited ? `<p class="fictrail-last-visited">
+                    Last visited: ${escapeHtml(work.lastVisited)}
+                   </p>` : ''}
+
+            ${work.summary && !work.matchingSummary ? `<div class="fictrail-summary">
+                    ${escapeHtml(work.summary).replace(/\n/g, '<br>')}
+                   </div>` : ''}
+        </div>
+    `)
+    .join('');
 
   if (append) {
     worksList.insertAdjacentHTML('beforeend', worksHTML);
