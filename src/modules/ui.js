@@ -120,7 +120,7 @@ function createOverlay() {
   // Add event listeners
   document.getElementById('fictrail-close').addEventListener('click', closeFicTrail);
   document.getElementById('fictrail-load-btn').addEventListener('click', reloadHistory);
-  document.getElementById('fictrail-retry-btn').addEventListener('click', loadFirstPage);
+  document.getElementById('fictrail-retry-btn').addEventListener('click', retryLastAction);
   document.getElementById('fictrail-search-input').addEventListener('input', debounce(performSearch, 300));
   document.getElementById('fictrail-fandom-filter').addEventListener('change', applyFilter);
   document.getElementById('fictrail-pages-slider').addEventListener('input', updatePagesValue);

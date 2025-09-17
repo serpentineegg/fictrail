@@ -47,9 +47,20 @@ async function fetchHistoryPage(username, page = 1) {
     const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+
+    // Check if user is actually logged in by looking for login indicators
+    const loginLink = doc.querySelector('a[href*="/users/login"]');
+    const loggedOutMessage = doc.querySelector('.flash.notice');
+    if (loginLink || (loggedOutMessage && loggedOutMessage.textContent.includes('log in'))) {
+      throw new Error('NOT_LOGGED_IN');
+    }
+
     return scrapeHistoryFromPage(doc);
   } catch (error) {
     console.error(`Error fetching page ${page}:`, error);
+    if (error.message === 'NOT_LOGGED_IN') {
+      throw error;
+    }
     return [];
   }
 }

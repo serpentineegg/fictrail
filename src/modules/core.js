@@ -1,11 +1,31 @@
 // Core Module - Main functionality and history loading
 let allWorks = [];
 let filteredWorks = [];
+let lastFailedAction = null;
+
+function showLoginError(message = 'Please sign into your AO3 account first. We need access to your history!') {
+  showError(`
+    <strong>Oops! You're not logged in</strong><br>
+    ${message}<br><br>
+    <button onclick="window.open('https://archiveofourown.org/users/login', '_blank')" class="fictrail-btn">
+      Log In to AO3
+    </button>
+  `);
+}
+
+function retryLastAction() {
+  if (lastFailedAction === 'reloadHistory') {
+    reloadHistory();
+  } else {
+    loadFirstPage();
+  }
+}
 
 async function loadFirstPage() {
+  lastFailedAction = 'loadFirstPage';
   const username = getUsername();
   if (!username) {
-    showError('<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account first. We need access to your history!');
+    showLoginError();
     return;
   }
 
@@ -21,26 +41,29 @@ async function loadFirstPage() {
       }
     }
 
-    // Only show loading for fallback fetch
+    // Fallback: fetch first page if DOM parsing failed or we're not on readings page
     showLoading('Summoning your fic history...');
-
-    // Fallback to fetching if DOM parsing didn't work
     const result = await fetchMultiplePages(username, 1);
     if (result.works && result.works.length > 0) {
       displayHistory(username, result.works, result.totalPages, 1);
     } else {
-      showError('Hmm, we didn\'t get any fic data back. Want to try that again?');
+      showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
     }
   } catch (error) {
+    if (error.message === 'NOT_LOGGED_IN') {
+      showLoginError('It looks like you\'ve been logged out of AO3. Please sign in again!');
+      return;
+    }
     console.error('Error loading first page:', error);
     showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
   }
 }
 
 async function reloadHistory() {
+  lastFailedAction = 'reloadHistory';
   const username = getUsername();
   if (!username) {
-    showError('<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account first. We need access to your history!');
+    showLoginError();
     return;
   }
 
@@ -66,6 +89,10 @@ async function reloadHistory() {
       showError('Hmm, we didn\'t get any fic data back. Want to try that again?');
     }
   } catch (error) {
+    if (error.message === 'NOT_LOGGED_IN') {
+      showLoginError('It looks like you\'ve been logged out of AO3. Please sign in again!');
+      return;
+    }
     console.error('Error loading history:', error);
     showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
   } finally {
