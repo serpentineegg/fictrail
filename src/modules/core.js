@@ -33,7 +33,7 @@ async function loadFirstPage() {
     // Check if we're on page 1 of readings - if so, parse current DOM instantly
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = parseInt(urlParams.get('page')) || 1;
-    
+
     if (window.location.pathname.includes('/readings') && currentPage === 1) {
       const works = scrapeHistoryFromPage(document);
       const totalPages = getTotalPages(document);

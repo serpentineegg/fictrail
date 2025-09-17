@@ -90,7 +90,7 @@ function getTotalPages(doc = document) {
 async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
   let totalPages;
   let firstPageWorks = [];
-  
+
   try {
     const firstPageUrl = `${AO3_BASE_URL}/users/${username}/readings?page=1`;
     const response = await fetch(firstPageUrl);
