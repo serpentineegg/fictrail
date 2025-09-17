@@ -163,7 +163,8 @@ function addStyles() {
         }
         
         .fictrail-history {
-            padding: 48px 40px;
+            padding: 40px;
+            padding-bottom: 0px;
         }
         
         .fictrail-controls {
@@ -429,6 +430,7 @@ function addStyles() {
         .fictrail-slider-track {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 12px;
         }
         
@@ -468,6 +470,42 @@ function addStyles() {
             background: #3b82f6;
             cursor: pointer;
             border: none;
+        }
+        
+        /* Footer Styles */
+        .fictrail-footer {
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .fictrail-footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .fictrail-footer .fictrail-page-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .fictrail-footer .fictrail-page-selector-header label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .fictrail-info-message p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .fictrail-footer .fictrail-slider-container {
+            width: 300px;
         }
     `;
 
