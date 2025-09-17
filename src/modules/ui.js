@@ -1,38 +1,47 @@
 // UI Module - DOM creation and event handling
 
-// Create FicTrail button
+// Create FicTrail button - try history page placement first
 function createFicTrailButton() {
-  const button = document.createElement('button');
-  button.id = 'fictrail-launch-btn';
+  // Only add to history page if we're on the readings page
+  if (window.location.pathname.includes('/readings')) {
+    addToHistoryPage()
+  }
+}
+
+// Add FicTrail button in front of "Full History" in subnav
+function addToHistoryPage() {
+  const subNav = document.querySelector('ul.navigation.actions[role="navigation"]');
+
+  if (!subNav) {
+    return false; // Subnav not found
+  }
+
+  // Create list item for the button
+  const listItem = document.createElement('li');
+
+  // Create the button using AO3's button styles
+  const button = document.createElement('a');
+  button.id = 'fictrail-history-btn';
   button.textContent = '📚 FicTrail';
-  button.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: #3b82f6;
-          color: white;
-          border: none;
-          padding: 12px 20px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          z-index: 9999;
-          transition: all 0.2s ease;
-      `;
-
-  button.addEventListener('mouseenter', () => {
-    button.style.background = '#2563eb';
-    button.style.transform = 'translateY(-2px)';
-  });
-
-  button.addEventListener('mouseleave', () => {
-    button.style.background = '#3b82f6';
-    button.style.transform = 'translateY(0)';
-  });
+  button.style.cursor = 'pointer';
+  button.tabIndex = 0;
 
   button.addEventListener('click', openFicTrail);
-  document.body.appendChild(button);
+
+  // Add keyboard support
+  button.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openFicTrail();
+    }
+  });
+
+  listItem.appendChild(button);
+
+  // Insert at the beginning of the subnav
+  subNav.insertBefore(listItem, subNav.firstChild);
+
+  return true;
 }
 
 // Create overlay HTML
@@ -127,7 +136,7 @@ function createOverlay() {
   document.getElementById('fictrail-pages-slider').addEventListener('input', updatePagesValue);
 
   // Add click handler for tags
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (e.target.classList.contains('fictrail-tag-match')) {
       const tagValue = e.target.getAttribute('data-tag-value');
       const searchInput = document.getElementById('fictrail-search-input');

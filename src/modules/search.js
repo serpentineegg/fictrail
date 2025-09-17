@@ -69,7 +69,6 @@ function performSearch() {
 
 function applyFilter() {
   const selectedFandom = document.getElementById('fictrail-fandom-filter').value;
-  const query = document.getElementById('fictrail-search-input').value.toLowerCase().trim();
 
   let worksToDisplay = [...filteredWorks];
   if (selectedFandom) {
