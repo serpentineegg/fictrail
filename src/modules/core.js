@@ -3,7 +3,7 @@ let allWorks = [];
 let filteredWorks = [];
 let lastFailedAction = null;
 
-function showLoginError(message = 'Please sign into your AO3 account first. We need access to your history!') {
+function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
   showError(`
     <strong>Oops! You're not logged in</strong><br>
     ${message}<br><br>
@@ -47,15 +47,15 @@ async function loadFirstPage() {
     if (result.works && result.works.length > 0) {
       displayHistory(username, result.works, result.totalPages, 1);
     } else {
-      showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
+      showError(ERROR_MESSAGES.FETCH_FAILED);
     }
   } catch (error) {
     if (error.message === 'NOT_LOGGED_IN') {
-      showLoginError('It looks like you\'ve been logged out of AO3. Please sign in again!');
+      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
       return;
     }
     console.error('Error loading first page:', error);
-    showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
+    showError(ERROR_MESSAGES.FETCH_FAILED);
   }
 }
 
@@ -86,15 +86,15 @@ async function reloadHistory() {
     if (result.works && result.works.length > 0) {
       displayHistory(username, result.works, result.totalPages, pagesToLoad);
     } else {
-      showError('Hmm, we didn\'t get any fic data back. Want to try that again?');
+      showError(ERROR_MESSAGES.NO_DATA);
     }
   } catch (error) {
     if (error.message === 'NOT_LOGGED_IN') {
-      showLoginError('It looks like you\'ve been logged out of AO3. Please sign in again!');
+      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
       return;
     }
     console.error('Error loading history:', error);
-    showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
+    showError(ERROR_MESSAGES.FETCH_FAILED);
   } finally {
     // Re-enable buttons after loading completes
     const loadBtn = document.getElementById('fictrail-load-btn');
