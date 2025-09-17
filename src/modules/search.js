@@ -91,7 +91,7 @@ function populateFandomFilter(works) {
     work.fandoms.forEach(fandom => allFandoms.add(fandom));
   });
 
-  const sortedFandoms = Array.from(allFandoms).sort();
+  const sortedFandoms = Array.from(allFandoms).sort((a, b) => a.localeCompare(b));
   fandomFilter.innerHTML = '<option value="">All Fandoms</option>';
 
   sortedFandoms.forEach(fandom => {
