@@ -311,7 +311,13 @@ function addStyles() {
             color: #718096;
             font-size: 14px;
             line-height: 1.4;
-            margin: 8px 0 0 0;
+            margin: 10px 0 0 0;
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 8px;
+            background: #fafafa;
         }
         
         .fictrail-matching-section {

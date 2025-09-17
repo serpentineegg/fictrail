@@ -1,4 +1,25 @@
 // Scraper Module - AO3 history fetching and parsing
+
+// Safely extract text content while preserving line breaks from HTML elements
+function extractTextWithLineBreaks(element) {
+  // Clone the element to avoid modifying the original
+  const clone = element.cloneNode(true);
+
+  // Replace block elements with newlines
+  const blockElements = clone.querySelectorAll('p, div, br');
+  blockElements.forEach(el => {
+    if (el.tagName === 'BR') {
+      el.replaceWith('\n');
+    } else {
+      // Add newline after block elements
+      el.insertAdjacentText('afterend', '\n');
+    }
+  });
+
+  // Get text content and clean up extra whitespace
+  return clone.textContent.replace(/\n\s*\n/g, '\n').trim();
+}
+
 function scrapeHistoryFromPage(doc) {
   const works = [];
   const workItems = doc.querySelectorAll('ol.reading li.work');
@@ -23,7 +44,7 @@ function scrapeHistoryFromPage(doc) {
         authorUrl: authorLink ? AO3_BASE_URL + authorLink.getAttribute('href') : null,
         fandoms: Array.from(fandomLinks).map(link => link.textContent.trim()),
         lastVisited: lastVisited ? lastVisited.textContent.replace(/Last visited:\s*/, '').trim() : '',
-        summary: summaryEl ? summaryEl.textContent.trim() : '',
+        summary: summaryEl ? extractTextWithLineBreaks(summaryEl) : '',
         words: wordsEl ? wordsEl.textContent.trim() : '',
         chapters: chaptersEl ? chaptersEl.textContent.trim() : '',
         publishDate: dateEl ? dateEl.textContent.trim() : '',
