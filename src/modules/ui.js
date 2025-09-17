@@ -239,7 +239,7 @@ function displayWorks(works) {
                   ${work.publishDate ? `<span>Published: ${escapeHtml(work.publishDate)}</span>` : ''}
               </div>
               ${work.lastVisited ? `<p class="fictrail-last-visited">Last visited: ${escapeHtml(work.lastVisited)}</p>` : ''}
-              ${work.summary && !work.matchingSummary ? `<p class="fictrail-summary">${escapeHtml(work.summary.substring(0, 300))}${work.summary.length > 300 ? '...' : ''}</p>` : ''}
+              ${work.summary && !work.matchingSummary ? `<div class="fictrail-summary">${escapeHtml(work.summary).replace(/\n/g, '<br>')}</div>` : ''}
           </div>
       `).join('');
 
