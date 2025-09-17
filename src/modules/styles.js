@@ -391,35 +391,6 @@ function addStyles() {
             line-height: 1.5;
         }
         
-        .fictrail-page-selector {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .fictrail-page-selector-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .fictrail-page-selector label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #4a5568;
-        }
-        
-        .fictrail-info-tooltip {
-            cursor: help;
-            font-size: 14px;
-            color: #718096;
-            transition: color 0.2s ease;
-        }
-        
-        .fictrail-info-tooltip:hover {
-            color: #4a5568;
-        }
         
         .fictrail-slider-container {
             display: flex;
@@ -490,6 +461,12 @@ function addStyles() {
             flex-direction: column;
             gap: 15px;
             align-items: center;
+        }
+        
+        .fictrail-footer .fictrail-page-selector-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .fictrail-footer .fictrail-page-selector-header label {
