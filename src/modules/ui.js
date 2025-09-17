@@ -85,7 +85,7 @@ function createOverlay() {
                           <div id="fictrail-works-list" class="fictrail-works"></div>
                           
                           <div id="fictrail-no-results" class="fictrail-no-results" style="display: none;">
-                              <h3>404: Fics Not Found</h3>
+                              <h3>No Results Found</h3>
                               <p>Your search came up empty! Try different keywords or maybe you haven't read that trope yet? 👀</p>
                           </div>
                           
