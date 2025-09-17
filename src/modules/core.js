@@ -44,14 +44,8 @@ async function loadFirstPage() {
       }
     }
 
-    // Fallback: fetch first page if DOM parsing failed or we're not on readings page
-    showLoading('Summoning your fic history...');
-    const result = await fetchMultiplePages(username, 1);
-    if (result.works && result.works.length > 0) {
-      displayHistory(username, result.works, result.totalPages, 1);
-    } else {
-      showError(ERROR_MESSAGES.FETCH_FAILED);
-    }
+    // Fallback: use reloadHistory to fetch first page
+    await reloadHistory();
   } catch (error) {
     if (error.message === 'NOT_LOGGED_IN') {
       showLoginError(ERROR_MESSAGES.LOGGED_OUT);

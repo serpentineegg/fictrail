@@ -101,8 +101,8 @@ function createOverlay() {
                                       <div class="fictrail-slider-container">
                                           <div class="fictrail-slider-track">
                                               <span class="fictrail-slider-min">1</span>
-                                              <input type="range" id="fictrail-pages-slider" min="1" max="50" value="10" class="fictrail-slider">
-                                              <span class="fictrail-slider-max">50</span>
+                                              <input type="range" id="fictrail-pages-slider" min="1" max="${MAX_PAGES_FETCH}" value="1" class="fictrail-slider">
+                                              <span class="fictrail-slider-max">${MAX_PAGES_FETCH}</span>
                                           </div>
                                       </div>
                                   </div>
@@ -145,10 +145,12 @@ function openFicTrail() {
   document.getElementById('fictrail-overlay').style.display = 'block';
   document.body.style.overflow = 'hidden';
 
-  // Automatically load first page when opening FicTrail
-  setTimeout(() => {
-    loadFirstPage();
-  }, 100);
+  // Only load data if we don't have any works yet
+  if (allWorks.length === 0) {
+    setTimeout(() => {
+      loadFirstPage();
+    }, 100);
+  }
 }
 
 function closeFicTrail() {
@@ -172,7 +174,10 @@ function updateReloadButtonText() {
 }
 
 function getPagesToLoad() {
-  return parseInt(document.getElementById('fictrail-pages-slider').value);
+  const slider = document.getElementById('fictrail-pages-slider');
+  // If slider doesn't exist yet, default to 1 page
+  if (!slider) return 1;
+  return parseInt(slider.value);
 }
 
 function showSection(sectionId) {
