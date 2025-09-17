@@ -6,7 +6,7 @@ Adds search and filtering to your AO3 reading history. Find fics by title, autho
 
 1. Install the userscript
 2. Visit your history page on AO3 (`https://archiveofourown.org/users/<username>/readings`)
-3. Click the "FicTrail" button that appears on the page (bottom-right corner)
+3. Click the "FicTrail" button that appears in the navigation bar (next to "Full History")
 4. Search your reading history
 
 ## Bug reports

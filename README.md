@@ -18,7 +18,7 @@ Built with flaming love for the AO3 community.
 
 3. **Start Using FicTrail**
    - Visit your history page on AO3 (`https://archiveofourown.org/users/<username>/readings`)
-   - Look for the floating "FicTrail" button
+   - Look for the "FicTrail" button in the navigation bar (next to "Full History")
    - Click it to open your reading history and start searching!
 
 ## Privacy
