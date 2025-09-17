@@ -47,9 +47,20 @@ async function fetchHistoryPage(username, page = 1) {
     const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+
+    // Check if user is actually logged in by looking for login indicators
+    const loginLink = doc.querySelector('a[href*="/users/login"]');
+    const loggedOutMessage = doc.querySelector('.flash.notice');
+    if (loginLink || (loggedOutMessage && loggedOutMessage.textContent.includes('log in'))) {
+      throw new Error('NOT_LOGGED_IN');
+    }
+
     return scrapeHistoryFromPage(doc);
   } catch (error) {
     console.error(`Error fetching page ${page}:`, error);
+    if (error.message === 'NOT_LOGGED_IN') {
+      throw error;
+    }
     return [];
   }
 }
@@ -76,8 +87,10 @@ function getTotalPages(doc = document) {
   return maxPage;
 }
 
-async function fetchMultiplePages(username, maxPagesToFetch = 10) {
+async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
   let totalPages;
+  let firstPageWorks = [];
+
   try {
     const firstPageUrl = `${AO3_BASE_URL}/users/${username}/readings?page=1`;
     const response = await fetch(firstPageUrl);
@@ -85,15 +98,17 @@ async function fetchMultiplePages(username, maxPagesToFetch = 10) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     totalPages = getTotalPages(doc);
+    firstPageWorks = scrapeHistoryFromPage(doc);
   } catch (error) {
     console.error('Error fetching first page:', error);
     return { works: [], totalPages: 1 };
   }
 
   const pagesToFetch = Math.min(maxPagesToFetch, totalPages);
-  const works = [];
+  const works = [...firstPageWorks];
 
-  for (let page = 1; page <= pagesToFetch; page++) {
+  // Start from page 2 since we already have page 1
+  for (let page = 2; page <= pagesToFetch; page++) {
     showLoading(`Loading page ${page} of ${pagesToFetch}...`);
     const pageWorks = await fetchHistoryPage(username, page);
     works.push(...pageWorks);

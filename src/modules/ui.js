@@ -49,20 +49,6 @@ function createOverlay() {
                           <p id="fictrail-subtitle">Your AO3 History</p>
                       </div>
                       <div id="fictrail-controls" style="display: flex; flex-direction: column; align-items: center;">
-                          <div class="fictrail-page-selector" id="fictrail-page-selector" style="display: none;">
-                              <div class="fictrail-page-selector-header">
-                                  <label for="fictrail-pages-slider">Pages to load</label>
-                                  <span class="fictrail-info-tooltip" title="Loading many pages can take a long time and use significant computer resources. Start with fewer pages for better performance.">ℹ️</span>
-                              </div>
-                              <div class="fictrail-slider-container">
-                                  <div class="fictrail-slider-track">
-                                      <span class="fictrail-slider-min">1</span>
-                                      <input type="range" id="fictrail-pages-slider" min="1" max="50" value="10" class="fictrail-slider">
-                                      <span class="fictrail-slider-max">50</span>
-                                  </div>
-                              </div>
-                          </div>
-                          <button id="fictrail-load-btn" class="fictrail-btn">Load My History</button>
                       </div>
                       <div id="fictrail-close-btn">
                           <button id="fictrail-close">×</button>
@@ -72,11 +58,6 @@ function createOverlay() {
                   <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
                   
                   <main class="fictrail-main">
-                      <div id="fictrail-welcome" class="fictrail-loading">
-                          <h2>Ready to explore?</h2>
-                          <p>Click "Load My History" and let's go!</p>
-                      </div>
-                      
                       <div id="fictrail-loading-section" class="fictrail-loading" style="display: none;">
                           <div class="fictrail-spinner"></div>
                           <h2>Summoning your fic history...</h2>
@@ -107,6 +88,27 @@ function createOverlay() {
                               <h3>404: Fics Not Found</h3>
                               <p>Your search came up empty! Try different keywords or maybe you haven't read that trope yet? 👀</p>
                           </div>
+                          
+                          <footer id="fictrail-footer" class="fictrail-footer" style="display: none;">
+                              <div class="fictrail-footer-content">
+                                  <div class="fictrail-page-selector" id="fictrail-page-selector">
+                                      <div class="fictrail-page-selector-header">
+                                          <label for="fictrail-pages-slider" id="fictrail-pages-label">You have ? pages of history. How deep should we search?</label>
+                                      </div>
+                                      <div class="fictrail-info-message">
+                                          <p>Loading many pages can be slow. Start with fewer pages for better performance, then reload with more if needed.</p>
+                                      </div>
+                                      <div class="fictrail-slider-container">
+                                          <div class="fictrail-slider-track">
+                                              <span class="fictrail-slider-min">1</span>
+                                              <input type="range" id="fictrail-pages-slider" min="1" max="${MAX_PAGES_FETCH}" value="1" class="fictrail-slider">
+                                              <span class="fictrail-slider-max">${MAX_PAGES_FETCH}</span>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <button id="fictrail-load-btn" class="fictrail-btn">Reload History</button>
+                              </div>
+                          </footer>
                       </div>
                   </main>
               </div>
@@ -117,8 +119,8 @@ function createOverlay() {
 
   // Add event listeners
   document.getElementById('fictrail-close').addEventListener('click', closeFicTrail);
-  document.getElementById('fictrail-load-btn').addEventListener('click', loadHistory);
-  document.getElementById('fictrail-retry-btn').addEventListener('click', loadHistory);
+  document.getElementById('fictrail-load-btn').addEventListener('click', reloadHistory);
+  document.getElementById('fictrail-retry-btn').addEventListener('click', retryLastAction);
   document.getElementById('fictrail-search-input').addEventListener('input', debounce(performSearch, 300));
   document.getElementById('fictrail-fandom-filter').addEventListener('change', applyFilter);
   document.getElementById('fictrail-pages-slider').addEventListener('input', updatePagesValue);
@@ -142,6 +144,13 @@ function createOverlay() {
 function openFicTrail() {
   document.getElementById('fictrail-overlay').style.display = 'block';
   document.body.style.overflow = 'hidden';
+
+  // Only load data if we don't have any works yet
+  if (allWorks.length === 0) {
+    setTimeout(() => {
+      loadFirstPage();
+    }, 100);
+  }
 }
 
 function closeFicTrail() {
@@ -155,21 +164,24 @@ function updatePagesValue() {
 
 function updateReloadButtonText() {
   const currentPages = parseInt(document.getElementById('fictrail-pages-slider').value);
-  const pageSelector = document.getElementById('fictrail-page-selector');
+  const footer = document.getElementById('fictrail-footer');
   const loadBtn = document.getElementById('fictrail-load-btn');
 
-  // Check if we're in reload mode (history has been loaded)
-  if (pageSelector.style.display !== 'none' && pageSelector.style.display !== '') {
+  // Check if we're in reload mode (footer is visible)
+  if (footer.style.display === 'block') {
     loadBtn.textContent = `Reload History (${currentPages} pages)`;
   }
 }
 
 function getPagesToLoad() {
-  return parseInt(document.getElementById('fictrail-pages-slider').value);
+  const slider = document.getElementById('fictrail-pages-slider');
+  // If slider doesn't exist yet, default to 1 page
+  if (!slider) return 1;
+  return parseInt(slider.value);
 }
 
 function showSection(sectionId) {
-  const sections = ['fictrail-welcome', 'fictrail-loading-section', 'fictrail-error-section', 'fictrail-history-section'];
+  const sections = ['fictrail-loading-section', 'fictrail-error-section', 'fictrail-history-section'];
   sections.forEach(id => {
     document.getElementById(id).style.display = id === sectionId ? 'block' : 'none';
   });

@@ -40,19 +40,24 @@ function writeFile(filePath, content) {
   }
 }
 
-function ensureDistDir() {
-  if (!fs.existsSync(BUILD_CONFIG.distDir)) {
-    fs.mkdirSync(BUILD_CONFIG.distDir, { recursive: true });
-    console.log(`📁 Created dist directory: ${BUILD_CONFIG.distDir}`);
+function cleanAndEnsureDistDir() {
+  // Remove existing dist directory if it exists
+  if (fs.existsSync(BUILD_CONFIG.distDir)) {
+    fs.rmSync(BUILD_CONFIG.distDir, { recursive: true, force: true });
+    console.log(`🗑️  Cleaned existing dist directory: ${BUILD_CONFIG.distDir}`);
   }
+
+  // Create fresh dist directory
+  fs.mkdirSync(BUILD_CONFIG.distDir, { recursive: true });
+  console.log(`📁 Created fresh dist directory: ${BUILD_CONFIG.distDir}`);
 }
 
 
 function buildUserscript() {
   console.log('🔨 Building FicTrail userscript...');
 
-  // Ensure dist directory exists
-  ensureDistDir();
+  // Clean and ensure dist directory exists
+  cleanAndEnsureDistDir();
 
   // Read userscript header
   const userscriptHeader = readFile(BUILD_CONFIG.headerFile) + '\n\n';

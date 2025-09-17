@@ -1,11 +1,66 @@
 // Core Module - Main functionality and history loading
 let allWorks = [];
 let filteredWorks = [];
+let lastFailedAction = null;
 
-async function loadHistory() {
+function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
+  showError(`
+    <strong>Oops! You're not logged in</strong><br>
+    ${message}<br><br>
+    <button onclick="window.open('https://archiveofourown.org/users/login', '_blank')" class="fictrail-btn">
+      Log In to AO3
+    </button>
+  `);
+}
+
+function retryLastAction() {
+  if (lastFailedAction === 'reloadHistory') {
+    reloadHistory();
+  } else {
+    loadFirstPage();
+  }
+}
+
+async function loadFirstPage() {
+  lastFailedAction = 'loadFirstPage';
   const username = getUsername();
   if (!username) {
-    showError('<strong>Oops! You\'re not logged in</strong><br>Please sign into your AO3 account first. We need access to your history!');
+    showLoginError();
+    return;
+  }
+
+  try {
+    // Check if we're on page 1 of readings - if so, parse current DOM instantly
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page')) || 1;
+
+    if (window.location.pathname.includes('/readings') && currentPage === 1) {
+      const works = scrapeHistoryFromPage(document);
+      const totalPages = getTotalPages(document);
+
+      if (works && works.length > 0) {
+        displayHistory(username, works, totalPages, 1);
+        return;
+      }
+    }
+
+    // Fallback: use reloadHistory to fetch first page
+    await reloadHistory();
+  } catch (error) {
+    if (error.message === 'NOT_LOGGED_IN') {
+      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
+      return;
+    }
+    console.error('Error loading first page:', error);
+    showError(ERROR_MESSAGES.FETCH_FAILED);
+  }
+}
+
+async function reloadHistory() {
+  lastFailedAction = 'reloadHistory';
+  const username = getUsername();
+  if (!username) {
+    showLoginError();
     return;
   }
 
@@ -18,50 +73,25 @@ async function loadHistory() {
   // Clear search bar when reloading
   document.getElementById('fictrail-search-input').value = '';
 
-  // Get pages to load from slider, default to 10 for initial load
-  const isReload = loadBtn.textContent.includes('Reload History');
-  let pagesToLoad;
+  // Get pages to load from slider
+  const pagesToLoad = getPagesToLoad();
 
-  if (isReload) {
-    pagesToLoad = getPagesToLoad();
-  } else {
-    // For initial load, first get total pages to set appropriate default
-    showLoading('Checking your history...');
-
-    try {
-      const firstPageUrl = `${AO3_BASE_URL}/users/${username}/readings?page=1`;
-      const response = await fetch(firstPageUrl);
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const totalPages = getTotalPages(doc);
-
-      // Update slider max value and set appropriate default
-      const slider = document.getElementById('fictrail-pages-slider');
-      const sliderMax = document.querySelector('.fictrail-slider-max');
-      slider.max = totalPages;
-      sliderMax.textContent = totalPages;
-
-      pagesToLoad = Math.min(10, totalPages);
-      slider.value = pagesToLoad;
-    } catch (error) {
-      console.error('Error getting total pages:', error);
-      pagesToLoad = 10; // fallback
-    }
-  }
-
-  showLoading(`Loading ${pagesToLoad} pages of ${username}'s history...`);
+  showLoading(`Loading ${pagesToLoad} pages of ${username}'s fic history...`);
 
   try {
     const result = await fetchMultiplePages(username, pagesToLoad);
     if (result.works && result.works.length > 0) {
       displayHistory(username, result.works, result.totalPages, pagesToLoad);
     } else {
-      showError('Hmm, we didn\'t get any fic data back. Want to try that again?');
+      showError(ERROR_MESSAGES.NO_DATA);
     }
   } catch (error) {
+    if (error.message === 'NOT_LOGGED_IN') {
+      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
+      return;
+    }
     console.error('Error loading history:', error);
-    showError('Uh oh! Something went wrong while fetching your reading adventures. Let\'s try again?');
+    showError(ERROR_MESSAGES.FETCH_FAILED);
   } finally {
     // Re-enable buttons after loading completes
     const loadBtn = document.getElementById('fictrail-load-btn');
@@ -88,8 +118,17 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
   if (totalPages && totalPages > 0) {
     const slider = document.getElementById('fictrail-pages-slider');
     const sliderMax = document.querySelector('.fictrail-slider-max');
+    const pagesLabel = document.getElementById('fictrail-pages-label');
+
     slider.max = totalPages;
     sliderMax.textContent = totalPages;
+
+    // Update the label with actual page count and current loaded pages
+    if (actualPagesLoaded === totalPages) {
+      pagesLabel.textContent = `You have ${totalPages} pages of history. All pages loaded.`;
+    } else {
+      pagesLabel.textContent = `You have ${totalPages} pages of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
+    }
 
     // Set slider value to the actual pages loaded (for initial load) or keep current value (for reload)
     if (actualPagesLoaded !== undefined) {
@@ -100,9 +139,12 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
     }
   }
 
-  // Update button text to indicate reload and show page selector
-  const pageSelector = document.getElementById('fictrail-page-selector');
-  pageSelector.style.display = 'flex';
+  // Show footer with page selector and update button for reload functionality
+  const footer = document.getElementById('fictrail-footer');
+  const loadBtn = document.getElementById('fictrail-load-btn');
+  footer.style.display = 'block';
+  loadBtn.textContent = 'Reload History';
+  loadBtn.onclick = reloadHistory;
   updateReloadButtonText();
 
   // Add favorite tags summary
