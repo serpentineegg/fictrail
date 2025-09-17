@@ -85,6 +85,9 @@ function applyFilter() {
     return 0;
   });
 
+  // Reset pagination for new search/filter
+  currentDisplayCount = ITEMS_PER_PAGE;
+
   // Show results count
   updateResultsCount(worksToDisplay.length);
   displayWorks(worksToDisplay);

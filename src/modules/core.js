@@ -3,6 +3,9 @@ let allWorks = [];
 let filteredWorks = [];
 let lastFailedAction = null;
 
+// Pagination state
+let currentDisplayCount = 20;
+
 function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
   showError(`
     <strong>Oops! You're not logged in</strong><br>
@@ -106,6 +109,9 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
 
   allWorks = works;
   filteredWorks = [...works];
+
+  // Reset pagination when loading new history
+  currentDisplayCount = ITEMS_PER_PAGE;
 
   const workCount = works.length;
   const uniqueAuthors = new Set(works.map(work => work.author)).size;

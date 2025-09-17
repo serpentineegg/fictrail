@@ -393,6 +393,41 @@ function addStyles() {
             font-size: 0.9em;
         }
         
+        .fictrail-load-more-message {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .fictrail-load-more-message p {
+            margin: 0;
+            color: #718096;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .fictrail-load-more-btn {
+            margin-top: 15px;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        
+        .fictrail-load-more-btn button {
+            background: white;
+            color: #3b82f6;
+            border: 2px solid #3b82f6;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .fictrail-load-more-btn button:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        
         .fictrail-favorite-tags-summary {
             margin: 10px 0 5px 0;
         }
