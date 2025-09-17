@@ -69,10 +69,8 @@ async function fetchHistoryPage(username, page = 1) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Check if user is actually logged in by looking for login indicators
-    const loginLink = doc.querySelector('a[href*="/users/login"]');
-    const loggedOutMessage = doc.querySelector('.flash.notice');
-    if (loginLink || (loggedOutMessage && loggedOutMessage.textContent.includes('log in'))) {
+    // Check logged-out state using shared helper
+    if (isLoggedOutDoc(doc)) {
       throw new Error('NOT_LOGGED_IN');
     }
 
@@ -118,10 +116,18 @@ async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
     const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
+    // Detect logged-out state on the first page fetch
+    if (isLoggedOutDoc(doc)) {
+      throw new Error('NOT_LOGGED_IN');
+    }
     totalPages = getTotalPages(doc);
     firstPageWorks = scrapeHistoryFromPage(doc);
   } catch (error) {
     console.error('Error fetching first page:', error);
+    if (error.message === 'NOT_LOGGED_IN') {
+      // Propagate to caller so UI can show proper login prompt
+      throw error;
+    }
     return { works: [], totalPages: 1 };
   }
 

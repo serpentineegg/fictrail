@@ -27,3 +27,10 @@ function getUsername() {
   }
   return null;
 }
+
+// Detect logged-out state based on AO3 login indicators within a fetched Document
+function isLoggedOutDoc(doc) {
+  const loginLink = doc.querySelector('a[href*="/users/login"]');
+  const loggedOutMessage = doc.querySelector('.flash.notice');
+  return Boolean(loginLink || (loggedOutMessage && loggedOutMessage.textContent.includes('log in')));
+}

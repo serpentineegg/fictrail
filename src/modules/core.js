@@ -10,7 +10,7 @@ function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
   showError(`
     <strong>Oops! You're not logged in</strong><br>
     ${message}<br><br>
-    <button onclick="window.open('https://archiveofourown.org/users/login', '_blank')" class="fictrail-btn">
+    <button onclick="window.open('${AO3_BASE_URL}/users/login', '_blank')" class="fictrail-btn">
       Log In to AO3
     </button>
   `);
@@ -37,7 +37,7 @@ async function loadFirstPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = parseInt(urlParams.get('page')) || 1;
 
-    if (window.location.pathname.includes('/readings') && currentPage === 1) {
+    if (window.location.pathname.includes('/readings') && currentPage === 1 && !urlParams.has('show')) {
       const works = scrapeHistoryFromPage(document);
       const totalPages = getTotalPages(document);
 
