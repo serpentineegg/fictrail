@@ -1,6 +1,7 @@
 // Constants Module - Configuration and constants
 const AO3_BASE_URL = 'https://archiveofourown.org';
 const MAX_PAGES_FETCH = 100;
+const ITEMS_PER_PAGE = 20;
 
 // Error Messages
 const ERROR_MESSAGES = {

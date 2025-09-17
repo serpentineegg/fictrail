@@ -198,33 +198,37 @@ function showError(message) {
   document.getElementById('fictrail-error-message').innerHTML = message;
 }
 
-function displayWorks(works) {
+function displayWorks(works, append = false) {
   const worksList = document.getElementById('fictrail-works-list');
   const noResults = document.getElementById('fictrail-no-results');
 
   if (works.length === 0) {
     worksList.style.display = 'none';
     noResults.style.display = 'block';
-    // Remove existing narrow search message when there are no results
-    const existingMessage = document.getElementById('fictrail-narrow-search-message');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
+    // Remove existing load more button and message when there are no results
+    removeLoadMoreElements();
     return;
   }
 
   worksList.style.display = 'grid';
   noResults.style.display = 'none';
 
-  const maxResults = 20;
-  const hasMoreResults = works.length > maxResults;
-  const worksToShow = works.slice(0, maxResults);
+  // Reset display count if not appending (new search/filter)
+  if (!append) {
+    currentDisplayCount = ITEMS_PER_PAGE;
+  }
 
-  worksList.innerHTML = worksToShow.map((work, index) => `
+  const worksToShow = works.slice(0, currentDisplayCount);
+  const hasMoreResults = works.length > currentDisplayCount;
+
+  // Calculate starting index for work numbers
+  const startIndex = append ? worksList.children.length : 0;
+
+  const worksHTML = worksToShow.slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0).map((work, index) => `
           <div class="fictrail-work">
               <div class="fictrail-work-header">
                   <h3><a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a></h3>
-                  <span class="fictrail-work-number">#${index + 1}</span>
+                  <span class="fictrail-work-number">#${startIndex + index + 1}</span>
               </div>
               <p class="fictrail-author">by ${work.authorUrl ? `<a href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}</p>
               ${work.fandoms.length > 0 ? `<p class="fictrail-fandoms">${work.fandoms.map(f => escapeHtml(f)).join(', ')}</p>` : ''}
@@ -244,31 +248,63 @@ function displayWorks(works) {
           </div>
       `).join('');
 
-  // Add message if there are more results
-  if (hasMoreResults) {
-    // Remove existing narrow search message if it exists
-    const existingMessage = document.getElementById('fictrail-narrow-search-message');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-
-    // Create and insert message after the works list
-    const messageDiv = document.createElement('div');
-    messageDiv.id = 'fictrail-narrow-search-message';
-    messageDiv.className = 'fictrail-narrow-search-message';
-    messageDiv.innerHTML = `
-              <p>Showing ${maxResults} of ${works.length} results. <strong>Narrow your search</strong> to see more specific matches.</p>
-          `;
-
-    // Insert after the works-list div
-    worksList.parentNode.insertBefore(messageDiv, worksList.nextSibling);
+  if (append) {
+    worksList.insertAdjacentHTML('beforeend', worksHTML);
   } else {
-    // Remove message if no longer needed
-    const existingMessage = document.getElementById('fictrail-narrow-search-message');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
+    worksList.innerHTML = worksHTML;
   }
+
+  // Remove existing load more elements before adding new ones
+  removeLoadMoreElements();
+
+  // Add load more button if there are more results
+  if (hasMoreResults) {
+    createLoadMoreButton(works, currentDisplayCount);
+  }
+}
+
+function removeLoadMoreElements() {
+  const existingButton = document.getElementById('fictrail-load-more-btn');
+  const existingMessage = document.getElementById('fictrail-load-more-message');
+  if (existingButton) existingButton.remove();
+  if (existingMessage) existingMessage.remove();
+}
+
+function createLoadMoreButton(works, currentCount) {
+  const worksList = document.getElementById('fictrail-works-list');
+  const remainingCount = works.length - currentCount;
+  const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
+
+  // Create load more message
+  const messageDiv = document.createElement('div');
+  messageDiv.id = 'fictrail-load-more-message';
+  messageDiv.className = 'fictrail-load-more-message';
+  messageDiv.innerHTML = `
+    <p>Showing ${currentCount} of ${works.length} results</p>
+  `;
+
+  // Create load more button
+  const buttonDiv = document.createElement('div');
+  buttonDiv.id = 'fictrail-load-more-btn';
+  buttonDiv.className = 'fictrail-load-more-btn';
+  buttonDiv.innerHTML = `
+    <button class="fictrail-btn-secondary" id="fictrail-load-more-button">
+      Load ${nextBatchSize} More Results
+    </button>
+  `;
+
+  // Insert after the works-list div
+  worksList.parentNode.insertBefore(messageDiv, worksList.nextSibling);
+  messageDiv.parentNode.insertBefore(buttonDiv, messageDiv.nextSibling);
+
+  // Add event listener to the load more button
+  const loadMoreButton = document.getElementById('fictrail-load-more-button');
+  loadMoreButton.addEventListener('click', loadMoreWorks);
+}
+
+function loadMoreWorks() {
+  currentDisplayCount += ITEMS_PER_PAGE;
+  displayWorks(filteredWorks, true);
 }
 
 function addFavoriteTagsSummary(works) {
