@@ -136,7 +136,7 @@ function createOverlay() {
   document.getElementById('fictrail-pages-slider').addEventListener('input', updatePagesValue);
 
   // Add click handler for tags
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', function(e) {
     if (e.target.classList.contains('fictrail-tag-match')) {
       const tagValue = e.target.getAttribute('data-tag-value');
       const searchInput = document.getElementById('fictrail-search-input');

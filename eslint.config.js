@@ -18,7 +18,8 @@ module.exports = [
       'no-console': 'off',
       'prefer-const': 'error',
       'no-var': 'error',
-      'object-curly-spacing': ['error', 'always']
+      'object-curly-spacing': ['error', 'always'],
+      'space-before-function-paren': ['error', { anonymous: 'never', named: 'never', asyncArrow: 'never' }]
     }
   },
   {
