@@ -55,9 +55,12 @@ function createOverlay() {
                   <header class="fictrail-header">
                       <div id="fictrail-header-main">
                           <h1>📚 FicTrail</h1>
-                          <p id="fictrail-subtitle">Your AO3 History</p>
-                      </div>
-                      <div id="fictrail-controls" style="display: flex; flex-direction: column; align-items: center;">
+                          <div id="fictrail-subtitle">
+                              <span id="fictrail-username">Your AO3 History</span>
+                              <span id="fictrail-works-count"></span>
+                              <span id="fictrail-fandoms-count"></span>
+                              <span id="fictrail-authors-count"></span>
+                          </div>
                       </div>
                       <div id="fictrail-close-btn">
                           <button id="fictrail-close">×</button>
@@ -76,20 +79,22 @@ function createOverlay() {
                       <div id="fictrail-error-section" class="fictrail-error" style="display: none;">
                           <h2>💀 Plot Twist!</h2>
                           <p id="fictrail-error-message"></p>
-                          <button id="fictrail-retry-btn" class="fictrail-btn-secondary">Try Again (Please?)</button>
+                          <button id="fictrail-retry-btn" class="fictrail-btn-base fictrail-btn-secondary">Try Again (Please?)</button>
                       </div>
                       
                       <div id="fictrail-history-section" class="fictrail-history" style="display: none;">
-                          <div class="fictrail-controls">
-                              <div class="fictrail-search">
-                                  <input type="text" id="fictrail-search-input" placeholder="Search by fandoms, titles, tags, authors, or summaries...">
-                                  <div id="fictrail-results-count" class="fictrail-results-count" style="display: none;"></div>
+                          <div class="fictrail-controls-section">
+                              <div class="fictrail-controls">
+                                  <div class="fictrail-search">
+                                      <input type="text" id="fictrail-search-input" placeholder="Search by fandoms, titles, tags, authors, or summaries...">
+                                  </div>
+                                  <div class="fictrail-filter">
+                                      <select id="fictrail-fandom-filter">
+                                          <option value="">All Fandoms</option>
+                                      </select>
+                                  </div>
                               </div>
-                              <div class="fictrail-filter">
-                                  <select id="fictrail-fandom-filter">
-                                      <option value="">All Fandoms</option>
-                                  </select>
-                              </div>
+                              <div id="fictrail-results-count" class="fictrail-results-count" style="display: none;"></div>
                           </div>
                           
                           <div id="fictrail-works-list" class="fictrail-works"></div>
@@ -106,7 +111,7 @@ function createOverlay() {
                                           <label for="fictrail-pages-slider" id="fictrail-pages-label">You have ? pages of history. How deep should we search?</label>
                                       </div>
                                       <div class="fictrail-info-message">
-                                          <p>Loading many pages can be slow. Start with fewer pages for better performance, then reload with more if needed.</p>
+                                          Loading multiple pages can be slow. Start with fewer pages for better performance, then reload with more if needed.
                                       </div>
                                       <div class="fictrail-slider-container">
                                           <div class="fictrail-slider-track">
@@ -116,7 +121,7 @@ function createOverlay() {
                                           </div>
                                       </div>
                                   </div>
-                                  <button id="fictrail-load-btn" class="fictrail-btn">Reload History</button>
+                                  <button id="fictrail-load-btn" class="fictrail-btn-base fictrail-btn">Reload History</button>
                               </div>
                           </footer>
                       </div>
@@ -179,7 +184,7 @@ function updateReloadButtonText() {
 
   // Check if we're in reload mode (footer is visible)
   if (footer.style.display === 'block') {
-    loadBtn.textContent = `Reload History (${currentPages} pages)`;
+    loadBtn.textContent = `Reload History (${currentPages} ${currentPages === 1 ? 'page' : 'pages'})`;
   }
 }
 
@@ -193,7 +198,11 @@ function getPagesToLoad() {
 function showSection(sectionId) {
   const sections = ['fictrail-loading-section', 'fictrail-error-section', 'fictrail-history-section'];
   sections.forEach(id => {
-    document.getElementById(id).style.display = id === sectionId ? 'block' : 'none';
+    if (id === sectionId) {
+      document.getElementById(id).style.display = id === 'fictrail-history-section' ? 'flex' : 'block';
+    } else {
+      document.getElementById(id).style.display = 'none';
+    }
   });
 }
 
@@ -275,11 +284,8 @@ function displayWorks(works, append = false) {
                 ${work.words ? `<span>${escapeHtml(work.words)} words</span>` : ''}
                 ${work.chapters ? `<span>${escapeHtml(work.chapters)} chapters</span>` : ''}
                 ${work.publishDate ? `<span>Published: ${escapeHtml(work.publishDate)}</span>` : ''}
+                ${work.lastVisited ? `<span>Last visited: ${escapeHtml(work.lastVisited)}</span>` : ''}
             </div>
-
-            ${work.lastVisited ? `<p class="fictrail-last-visited">
-                    Last visited: ${escapeHtml(work.lastVisited)}
-                   </p>` : ''}
 
             ${work.summary && !work.matchingSummary ? `<div class="fictrail-summary">
                     ${escapeHtml(work.summary).replace(/\n/g, '<br>')}
@@ -304,10 +310,8 @@ function displayWorks(works, append = false) {
 }
 
 function removeLoadMoreElements() {
-  const existingButton = document.getElementById('fictrail-load-more-btn');
-  const existingMessage = document.getElementById('fictrail-load-more-message');
-  if (existingButton) existingButton.remove();
-  if (existingMessage) existingMessage.remove();
+  const existingContainer = document.getElementById('fictrail-load-more-container');
+  if (existingContainer) existingContainer.remove();
 }
 
 function createLoadMoreButton(works, currentCount) {
@@ -315,12 +319,16 @@ function createLoadMoreButton(works, currentCount) {
   const remainingCount = works.length - currentCount;
   const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
 
+  // Create container for load more elements
+  const containerDiv = document.createElement('div');
+  containerDiv.id = 'fictrail-load-more-container';
+
   // Create load more message
   const messageDiv = document.createElement('div');
   messageDiv.id = 'fictrail-load-more-message';
   messageDiv.className = 'fictrail-load-more-message';
   messageDiv.innerHTML = `
-    <p>Showing ${currentCount} of ${works.length} results</p>
+    <p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>
   `;
 
   // Create load more button
@@ -328,14 +336,17 @@ function createLoadMoreButton(works, currentCount) {
   buttonDiv.id = 'fictrail-load-more-btn';
   buttonDiv.className = 'fictrail-load-more-btn';
   buttonDiv.innerHTML = `
-    <button class="fictrail-btn-secondary" id="fictrail-load-more-button">
-      Load ${nextBatchSize} More Results
+    <button class="fictrail-btn-base fictrail-btn-secondary" id="fictrail-load-more-button">
+      Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}
     </button>
   `;
 
-  // Insert after the works-list div
-  worksList.parentNode.insertBefore(messageDiv, worksList.nextSibling);
-  messageDiv.parentNode.insertBefore(buttonDiv, messageDiv.nextSibling);
+  // Add message and button to container
+  containerDiv.appendChild(messageDiv);
+  containerDiv.appendChild(buttonDiv);
+
+  // Insert container after the works-list div
+  worksList.parentNode.insertBefore(containerDiv, worksList.nextSibling);
 
   // Add event listener to the load more button
   const loadMoreButton = document.getElementById('fictrail-load-more-button');
@@ -394,9 +405,7 @@ function addFavoriteTagsSummary(works) {
     const summaryDiv = document.createElement('div');
     summaryDiv.id = 'fictrail-favorite-tags-summary';
     summaryDiv.className = 'fictrail-favorite-tags-summary';
-    summaryDiv.innerHTML = `
-              <p class="fictrail-summary-text">So you've been really into ${escapeHtml(mostPopularTag)} lately. Love it for you.</p>
-          `;
+    summaryDiv.innerHTML = `So you've been really into ${escapeHtml(mostPopularTag)} lately. Love it for you.`;
 
     // Insert after header subtitle
     const headerSubtitle = document.getElementById('fictrail-subtitle');
