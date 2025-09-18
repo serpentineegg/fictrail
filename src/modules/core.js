@@ -8,9 +8,9 @@ let currentDisplayCount = 20;
 
 function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
   showError(`
-    <strong>Oops! You're not logged in</strong><br>
+    <strong>Oops! You're not logged in.</strong><br>
     ${message}<br><br>
-    <button onclick="window.open('${AO3_BASE_URL}/users/login', '_blank')" class="fictrail-btn">
+    <button onclick="window.open('${AO3_BASE_URL}/users/login', '_blank')" class="fictrail-btn-base fictrail-btn">
       Log In to AO3
     </button>
   `);
@@ -79,7 +79,7 @@ async function reloadHistory() {
   // Get pages to load from slider
   const pagesToLoad = getPagesToLoad();
 
-  showLoading(`Loading ${pagesToLoad} pages of ${username}'s fic history...`);
+  showLoading(`Loading ${pagesToLoad} ${pagesToLoad === 1 ? 'page' : 'pages'} of ${username}'s fic history...`);
 
   try {
     const result = await fetchMultiplePages(username, pagesToLoad);
@@ -117,8 +117,11 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
   const uniqueAuthors = new Set(works.map(work => work.author)).size;
   const uniqueFandoms = new Set(works.flatMap(work => work.fandoms)).size;
 
-  document.getElementById('fictrail-subtitle').textContent =
-          `${username} • ${workCount} works • ${uniqueFandoms} fandoms • ${uniqueAuthors} authors`;
+  // Update individual subtitle elements with proper plural/singular forms
+  document.getElementById('fictrail-username').textContent = username;
+  document.getElementById('fictrail-works-count').textContent = `${workCount} ${workCount === 1 ? 'work' : 'works'}`;
+  document.getElementById('fictrail-fandoms-count').textContent = `${uniqueFandoms} ${uniqueFandoms === 1 ? 'fandom' : 'fandoms'}`;
+  document.getElementById('fictrail-authors-count').textContent = `${uniqueAuthors} ${uniqueAuthors === 1 ? 'author' : 'authors'}`;
 
   // Update slider max value to match user's actual page count
   if (totalPages && totalPages > 0) {
@@ -131,9 +134,9 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
 
     // Update the label with actual page count and current loaded pages
     if (actualPagesLoaded === totalPages) {
-      pagesLabel.textContent = `You have ${totalPages} pages of history. All pages loaded.`;
+      pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
     } else {
-      pagesLabel.textContent = `You have ${totalPages} pages of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
+      pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
     }
 
     // Set slider value to the actual pages loaded (for initial load) or keep current value (for reload)
