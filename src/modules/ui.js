@@ -75,9 +75,33 @@ function createOverlay() {
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
   const pagesSlider = document.getElementById('fictrail-pages-slider');
 
-  if (closeBtn) closeBtn.addEventListener('click', closeFicTrail);
-  if (loadBtn) loadBtn.addEventListener('click', reloadHistory);
-  if (retryBtn) retryBtn.addEventListener('click', retryLastAction);
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeFicTrail);
+    closeBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        closeFicTrail();
+      }
+    });
+  }
+  if (loadBtn) {
+    loadBtn.addEventListener('click', reloadHistory);
+    loadBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        reloadHistory();
+      }
+    });
+  }
+  if (retryBtn) {
+    retryBtn.addEventListener('click', retryLastAction);
+    retryBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        retryLastAction();
+      }
+    });
+  }
   if (searchInput) searchInput.addEventListener('input', debounce(performSearch, 300));
   if (fandomFilter) fandomFilter.addEventListener('change', applyFilter);
   if (pagesSlider) pagesSlider.addEventListener('input', updatePagesValue);
@@ -379,10 +403,11 @@ function createLoadMoreButton(works, currentCount) {
 
   // Create load more button using AO3 actions structure
   const buttonDiv = document.createElement('div');
+  buttonDiv.className = 'actions';
   buttonDiv.innerHTML = `
-    <button class="button" id="fictrail-load-more-button">
+    <a id="fictrail-load-more-button" style="cursor: pointer;" tabindex="0">
       Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}
-    </button>
+    </a>
   `;
 
   // Add message and button to container
@@ -395,6 +420,12 @@ function createLoadMoreButton(works, currentCount) {
   // Add event listener to the load more button
   const loadMoreButton = document.getElementById('fictrail-load-more-button');
   loadMoreButton.addEventListener('click', loadMoreWorks);
+  loadMoreButton.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      loadMoreWorks();
+    }
+  });
 }
 
 function loadMoreWorks() {

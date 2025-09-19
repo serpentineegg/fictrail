@@ -121,7 +121,7 @@ function buildUserscript(options = {}) {
       if (moduleName === 'ui.js' && templates['fictrail-overlay.html']) {
         const templateContent = templates['fictrail-overlay.html'];
         moduleContent = moduleContent.replace(
-          /fictrailDiv\.innerHTML = `.*?`;/s,
+          /fictrailDiv\.innerHTML = '.*?';/s,
           `fictrailDiv.innerHTML = \`${templateContent}\`;`
         );
       }
@@ -129,7 +129,7 @@ function buildUserscript(options = {}) {
       if (moduleName === 'styles.js' && templates['fictrail-styles.css']) {
         const cssContent = templates['fictrail-styles.css'];
         moduleContent = moduleContent.replace(
-          /const css = `[\s\S]*?`;/,
+          /const css = '[\s\S]*?';/,
           `const css = \`${cssContent}\`;`
         );
       }
