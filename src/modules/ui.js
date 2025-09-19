@@ -44,133 +44,124 @@ function addToHistoryPage() {
   return true;
 }
 
-// Create overlay HTML
+// Create FicTrail content inside #main
 function createOverlay() {
-  const overlay = document.createElement('div');
-  overlay.id = 'fictrail-overlay';
+  // Check if overlay already exists
+  if (document.getElementById('fictrail-container')) {
+    return;
+  }
 
-  overlay.innerHTML = `
-          <div id="fictrail-container">
-              <div id="fictrail-content">
-                  <header class="fictrail-header">
-                      <div id="fictrail-header-main">
-                          <h1>📚 FicTrail</h1>
-                          <div id="fictrail-subtitle">
-                              <span id="fictrail-username">Your AO3 History</span>
-                              <span id="fictrail-works-count"></span>
-                              <span id="fictrail-fandoms-count"></span>
-                              <span id="fictrail-authors-count"></span>
-                          </div>
-                      </div>
-                      <div id="fictrail-close-btn">
-                          <button id="fictrail-close">×</button>
-                      </div>
-                  </header>
-                  
-                  <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 0;">
-                  
-                  <main class="fictrail-main">
-                      <div id="fictrail-loading-section" class="fictrail-loading" style="display: none;">
-                          <div class="fictrail-spinner"></div>
-                          <h2>Summoning your fic history...</h2>
-                          <p id="fictrail-loading-status">Diving deep into your AO3 rabbit hole...</p>
-                      </div>
-                      
-                      <div id="fictrail-error-section" class="fictrail-error" style="display: none;">
-                          <h2>💀 Plot Twist!</h2>
-                          <p id="fictrail-error-message"></p>
-                          <button id="fictrail-retry-btn" class="fictrail-btn-base fictrail-btn-secondary">Try Again (Please?)</button>
-                      </div>
-                      
-                      <div id="fictrail-history-section" class="fictrail-history" style="display: none;">
-                          <div class="fictrail-controls-section">
-                              <div class="fictrail-controls">
-                                  <div class="fictrail-search">
-                                      <input type="text" id="fictrail-search-input" placeholder="Search by fandoms, titles, tags, authors, or summaries...">
-                                  </div>
-                                  <div class="fictrail-filter">
-                                      <select id="fictrail-fandom-filter">
-                                          <option value="">All Fandoms</option>
-                                      </select>
-                                  </div>
-                              </div>
-                              <div id="fictrail-results-count" class="fictrail-results-count" style="display: none;"></div>
-                          </div>
-                          
-                          <div id="fictrail-works-list" class="fictrail-works"></div>
-                          
-                          <div id="fictrail-no-results" class="fictrail-no-results" style="display: none;">
-                              <h3>No Results Found</h3>
-                              <p>Your search came up empty! Try different keywords or maybe you haven't read that trope yet? 👀</p>
-                          </div>
-                          
-                          <footer id="fictrail-footer" class="fictrail-footer" style="display: none;">
-                              <div class="fictrail-footer-content">
-                                  <div class="fictrail-page-selector" id="fictrail-page-selector">
-                                      <div class="fictrail-page-selector-header">
-                                          <label for="fictrail-pages-slider" id="fictrail-pages-label">You have ? pages of history. How deep should we search?</label>
-                                      </div>
-                                      <div class="fictrail-info-message">
-                                          Loading multiple pages can be slow. Start with fewer pages for better performance, then reload with more if needed.
-                                      </div>
-                                      <div class="fictrail-slider-container">
-                                          <div class="fictrail-slider-track">
-                                              <span class="fictrail-slider-min">1</span>
-                                              <input type="range" id="fictrail-pages-slider" min="1" max="${MAX_PAGES_FETCH}" value="1" class="fictrail-slider">
-                                              <span class="fictrail-slider-max">${MAX_PAGES_FETCH}</span>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <button id="fictrail-load-btn" class="fictrail-btn-base fictrail-btn">Reload History</button>
-                              </div>
-                          </footer>
-                      </div>
-                  </main>
-              </div>
-          </div>
-      `;
+  const mainElement = document.getElementById('main');
+  if (!mainElement) {
+    console.error('Could not find #main element');
+    return;
+  }
 
-  document.body.appendChild(overlay);
+  // Create FicTrail container
+  const fictrailDiv = document.createElement('div');
+  fictrailDiv.id = 'fictrail-container';
+  // HTML template will be injected here during build
+  fictrailDiv.innerHTML = '<!-- This will be replaced by build script -->';
 
-  // Add event listeners
-  document.getElementById('fictrail-close').addEventListener('click', closeFicTrail);
-  document.getElementById('fictrail-load-btn').addEventListener('click', reloadHistory);
-  document.getElementById('fictrail-retry-btn').addEventListener('click', retryLastAction);
-  document.getElementById('fictrail-search-input').addEventListener('input', debounce(performSearch, 300));
-  document.getElementById('fictrail-fandom-filter').addEventListener('change', applyFilter);
-  document.getElementById('fictrail-pages-slider').addEventListener('input', updatePagesValue);
+  // Insert FicTrail inside #main
+  mainElement.appendChild(fictrailDiv);
 
-  // Add click handler for tags
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('fictrail-tag-match')) {
-      const tagValue = e.target.getAttribute('data-tag-value');
-      const searchInput = document.getElementById('fictrail-search-input');
-      searchInput.value = tagValue;
-      performSearch();
-    }
-  });
 
-  // Close on overlay click
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeFicTrail();
-  });
+  // Add event listeners with error checking
+  const closeBtn = document.getElementById('fictrail-close');
+  const loadBtn = document.getElementById('fictrail-load-btn');
+  const retryBtn = document.getElementById('fictrail-retry-btn');
+  const searchInput = document.getElementById('fictrail-search-input');
+  const fandomFilter = document.getElementById('fictrail-fandom-filter');
+  const pagesSlider = document.getElementById('fictrail-pages-slider');
+
+  if (closeBtn) closeBtn.addEventListener('click', closeFicTrail);
+  if (loadBtn) loadBtn.addEventListener('click', reloadHistory);
+  if (retryBtn) retryBtn.addEventListener('click', retryLastAction);
+  if (searchInput) searchInput.addEventListener('input', debounce(performSearch, 300));
+  if (fandomFilter) fandomFilter.addEventListener('change', applyFilter);
+  if (pagesSlider) pagesSlider.addEventListener('input', updatePagesValue);
 }
 
 function openFicTrail() {
-  document.getElementById('fictrail-overlay').style.display = 'block';
-  document.body.style.overflow = 'hidden';
+  // Create FicTrail if it doesn't exist
+  if (!document.getElementById('fictrail-container')) {
+    createOverlay();
+  }
+
+  const mainElement = document.getElementById('main');
+  const fictrailContainer = document.getElementById('fictrail-container');
+
+  if (mainElement) {
+    // Hide all children of #main except FicTrail
+    Array.from(mainElement.children).forEach(child => {
+      if (child.id !== 'fictrail-container') {
+        child.style.display = 'none';
+      }
+    });
+  }
+
+  if (fictrailContainer) fictrailContainer.style.display = 'block';
 
   // Only load data if we don't have any works yet
   if (allWorks.length === 0) {
+    // Show loading state immediately
+    showFicTrailLoading();
     setTimeout(() => {
       loadFirstPage();
     }, 100);
+  } else {
+    // Show existing results
+    showFicTrailResults();
   }
 }
 
 function closeFicTrail() {
-  document.getElementById('fictrail-overlay').style.display = 'none';
-  document.body.style.overflow = '';
+  const mainElement = document.getElementById('main');
+  const fictrailContainer = document.getElementById('fictrail-container');
+
+  if (mainElement) {
+    // Show all children of #main except FicTrail
+    Array.from(mainElement.children).forEach(child => {
+      if (child.id !== 'fictrail-container') {
+        child.style.display = '';
+      }
+    });
+  }
+
+  if (fictrailContainer) fictrailContainer.style.display = 'none';
+}
+
+// Helper functions to show different content states
+function showFicTrailState(stateId) {
+  const states = ['fictrail-loading', 'fictrail-error', 'fictrail-results'];
+
+  states.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.style.display = id === stateId ? 'block' : 'none';
+    }
+  });
+}
+
+function showFicTrailLoading(message = 'Summoning your fic history...') {
+  showFicTrailState('fictrail-loading');
+  const statusElement = document.getElementById('fictrail-loading-status');
+  if (statusElement) {
+    statusElement.textContent = message;
+  }
+}
+
+function showFicTrailError(message) {
+  showFicTrailState('fictrail-error');
+  const errorElement = document.getElementById('fictrail-error-message');
+  if (errorElement) {
+    errorElement.innerHTML = message;
+  }
+}
+
+function showFicTrailResults() {
+  showFicTrailState('fictrail-results');
 }
 
 function updatePagesValue() {
@@ -195,40 +186,21 @@ function getPagesToLoad() {
   return parseInt(slider.value);
 }
 
-function showSection(sectionId) {
-  const sections = ['fictrail-loading-section', 'fictrail-error-section', 'fictrail-history-section'];
-  sections.forEach(id => {
-    if (id === sectionId) {
-      document.getElementById(id).style.display = id === 'fictrail-history-section' ? 'flex' : 'block';
-    } else {
-      document.getElementById(id).style.display = 'none';
-    }
-  });
-}
-
-function showLoading(message = 'Summoning your fic history...') {
-  showSection('fictrail-loading-section');
-  document.getElementById('fictrail-loading-status').textContent = message;
-}
-
-function showError(message) {
-  showSection('fictrail-error-section');
-  document.getElementById('fictrail-error-message').innerHTML = message;
-}
 
 function displayWorks(works, append = false) {
+  const worksListContainer = document.getElementById('fictrail-works-container');
   const worksList = document.getElementById('fictrail-works-list');
   const noResults = document.getElementById('fictrail-no-results');
 
   if (works.length === 0) {
-    worksList.style.display = 'none';
+    worksListContainer.style.display = 'none';
     noResults.style.display = 'block';
     // Remove existing load more button and message when there are no results
     removeLoadMoreElements();
     return;
   }
 
-  worksList.style.display = 'grid';
+  worksListContainer.style.display = 'block';
   noResults.style.display = 'none';
 
   // Reset display count if not appending (new search/filter)
@@ -245,52 +217,126 @@ function displayWorks(works, append = false) {
   const worksHTML = worksToShow
     .slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0)
     .map((work, index) => `
-        <div class="fictrail-work">
-            <div class="fictrail-work-header">
-                <h3>
-                    <a href="${work.url}" target="_blank" rel="noopener">
-                        ${escapeHtml(work.title)}
-                    </a>
-                </h3>
-                <span class="fictrail-work-number">#${startIndex + index + 1}</span>
+        <li id="work_${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" class="reading work blurb group work-${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" role="article">
+            <!--title, author, fandom-->
+            <div class="header module">
+                <h4 class="heading">
+                    <a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a>
+                    by
+                    ${work.authorUrl ? `<a rel="author" href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}
+                </h4>
+
+                <h5 class="fandoms heading">
+                    <span class="landmark">Fandoms:</span>
+                    ${work.fandoms.map(fandom => `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${escapeHtml(fandom)}</a>`).join(', ')}
+                    &nbsp;
+                </h5>
+
+                <!--required tags-->
+                <ul class="required-tags">
+                    ${work.rating && work.ratingClass ? `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.ratingClass}" title="${escapeHtml(work.rating)}"><span class="text">${escapeHtml(work.rating)}</span></span></a></li>` : ''}
+                    ${work.warnings && work.warningClasses ? work.warnings.map((warning, index) => `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.warningClasses[index] || ''}" title="${escapeHtml(warning)}"><span class="text">${escapeHtml(warning)}</span></span></a></li>`).join('') : ''}
+                    ${work.categories && work.categoryClasses ? work.categories.map((category, index) => `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.categoryClasses[index] || ''}" title="${escapeHtml(category)}"><span class="text">${escapeHtml(category)}</span></span></a></li>`).join('') : ''}
+                    ${work.status && work.statusClass ? `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.statusClass}" title="${escapeHtml(work.status)}"><span class="text">${escapeHtml(work.status)}</span></span></a></li>` : ''}
+                </ul>
+                ${work.publishDate ? `<p class="datetime">${escapeHtml(work.publishDate)}</p>` : ''}
             </div>
 
-            <p class="fictrail-author">
-                by ${work.authorUrl ? `<a href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}
-            </p>
+            <!--warnings again, cast, freeform tags-->
+            ${(() => {
+                // Always show all tags, but highlight matching ones
+                const allTags = [
+                    ...(work.warnings || []).map(tag => ({ type: 'warning', value: tag })),
+                    ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
+                    ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
+                    ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
+                ];
 
-            ${work.fandoms.length > 0 ? `<p class="fictrail-fandoms">
-                    ${work.fandoms.map(f => escapeHtml(f)).join(', ')}
-                   </p>` : ''}
-            
-            ${work.matchingTags && work.matchingTags.length > 0 ? `<div class="fictrail-matching-section">
-                    <strong>Matching tags:</strong> 
-                    ${work.matchingTags.map(tag => `<span class="fictrail-tag-match fictrail-tag-${tag.type}" 
-                               data-tooltip="${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} tag" 
-                               data-tag-value="${escapeHtml(tag.value)}" 
-                               tabindex="0" 
-                               role="button" 
-                               aria-label="${escapeHtml(tag.value)} - ${tag.type.charAt(0).toUpperCase() + tag.type.slice(1)} tag">
-                            ${escapeHtml(tag.value)}
-                        </span>`).join('')}
-                   </div>` : ''}
-               
-            ${work.matchingSummary ? `<div class="fictrail-matching-section">
-                    <strong>Matching summary:</strong> 
-                    ${escapeHtml(work.matchingSummary)}
-                   </div>` : ''}
+                if (allTags.length === 0) return '';
 
-            <div class="fictrail-metadata">
-                ${work.words ? `<span>${escapeHtml(work.words)} words</span>` : ''}
-                ${work.chapters ? `<span>${escapeHtml(work.chapters)} chapters</span>` : ''}
-                ${work.publishDate ? `<span>Published: ${escapeHtml(work.publishDate)}</span>` : ''}
-                ${work.lastVisited ? `<span>Last visited: ${escapeHtml(work.lastVisited)}</span>` : ''}
+                // Create a set of matching tag values for quick lookup
+                const matchingTagValues = new Set((work.matchingTags || []).map(tag => tag.value));
+
+                return `<h6 class="landmark heading">Tags</h6>
+                <ul class="tags commas">
+                    ${allTags.map(tag => {
+                        let className = '';
+                        if (tag.type === 'relationship') className = 'relationships';
+                        else if (tag.type === 'character') className = 'characters';
+                        else if (tag.type === 'freeform') className = 'freeforms';
+                        else if (tag.type === 'warning') className = 'warnings';
+
+                        // Add highlight class if this tag matches the search
+                        const isMatching = matchingTagValues.has(tag.value);
+                        const tagClass = isMatching ? 'tag fictrail-highlight' : 'tag';
+
+                        return `<li class="${className}"><a class="${tagClass}" href="/tags/${encodeURIComponent(tag.value)}/works" target="_blank" rel="noopener">${escapeHtml(tag.value)}</a></li>`;
+                    }).join(' ')}
+                </ul>`;
+            })()}
+
+            <!--summary-->
+            ${work.summary ? `<h6 class="landmark heading">Summary</h6>
+            <blockquote class="userstuff summary">
+                ${(() => {
+                    let summaryHTML = work.summary;
+
+                    // Get current search query and highlight matching text
+                    const searchInput = document.getElementById('fictrail-search-input');
+                    if (searchInput && searchInput.value.trim()) {
+                        const searchQuery = searchInput.value.trim();
+                        const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        summaryHTML = summaryHTML.replace(
+                            new RegExp(`(${escapedQuery})`, 'gi'),
+                            '<span class="fictrail-highlight fictrail-highlight-text">$1</span>'
+                        );
+                    }
+
+                    return summaryHTML;
+                })()}
+            </blockquote>` : ''}
+
+            <!--series-->
+            ${work.series && work.series.length > 0 ? `<h6 class="landmark heading">Series</h6>
+            <ul class="series">
+                ${work.series.map(series => `<li>
+                    Part <strong>${series.part}</strong> of <a href="${series.url}" target="_blank" rel="noopener">${escapeHtml(series.title)}</a>
+                </li>`).join('')}
+            </ul>` : ''}
+
+            <!--stats-->
+            ${(() => {
+                const stats = work.stats || {};
+                const hasStats = Object.values(stats).some(value => value && value.trim());
+
+                if (!hasStats) return '';
+
+                return `<dl class="stats">
+                    ${stats.language ? `<dt class="language">Language:</dt>
+                    <dd class="language" lang="en">${escapeHtml(stats.language)}</dd>` : ''}
+                    ${stats.words ? `<dt class="words">Words:</dt>
+                    <dd class="words">${escapeHtml(stats.words)}</dd>` : ''}
+                    ${stats.chapters ? `<dt class="chapters">Chapters:</dt>
+                    <dd class="chapters">${escapeHtml(stats.chapters)}</dd>` : ''}
+                    ${stats.collections ? `<dt class="collections">Collections:</dt>
+                    <dd class="collections">${escapeHtml(stats.collections)}</dd>` : ''}
+                    ${stats.comments ? `<dt class="comments">Comments:</dt>
+                    <dd class="comments">${escapeHtml(stats.comments)}</dd>` : ''}
+                    ${stats.kudos ? `<dt class="kudos">Kudos:</dt>
+                    <dd class="kudos">${escapeHtml(stats.kudos)}</dd>` : ''}
+                    ${stats.bookmarks ? `<dt class="bookmarks">Bookmarks:</dt>
+                    <dd class="bookmarks">${escapeHtml(stats.bookmarks)}</dd>` : ''}
+                    ${stats.hits ? `<dt class="hits">Hits:</dt>
+                    <dd class="hits">${escapeHtml(stats.hits)}</dd>` : ''}
+                </dl>`;
+            })()}
+
+            <div class="user module group">
+                <h4 class="viewed heading">
+                    <span>Last visited:</span> ${work.lastVisited || 'Unknown'}
+                </h4>
             </div>
-
-            ${work.summary && !work.matchingSummary ? `<div class="fictrail-summary">
-                    ${escapeHtml(work.summary).replace(/\n/g, '<br>')}
-                   </div>` : ''}
-        </div>
+        </li>
     `)
     .join('');
 
@@ -319,24 +365,22 @@ function createLoadMoreButton(works, currentCount) {
   const remainingCount = works.length - currentCount;
   const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
 
-  // Create container for load more elements
+  // Create container for load more elements using AO3 structure
   const containerDiv = document.createElement('div');
   containerDiv.id = 'fictrail-load-more-container';
+  containerDiv.className = 'fictrail-load-more-container';
 
   // Create load more message
   const messageDiv = document.createElement('div');
   messageDiv.id = 'fictrail-load-more-message';
-  messageDiv.className = 'fictrail-load-more-message';
   messageDiv.innerHTML = `
     <p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>
   `;
 
-  // Create load more button
+  // Create load more button using AO3 actions structure
   const buttonDiv = document.createElement('div');
-  buttonDiv.id = 'fictrail-load-more-btn';
-  buttonDiv.className = 'fictrail-load-more-btn';
   buttonDiv.innerHTML = `
-    <button class="fictrail-btn-base fictrail-btn-secondary" id="fictrail-load-more-button">
+    <button class="button" id="fictrail-load-more-button">
       Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}
     </button>
   `;
@@ -401,14 +445,13 @@ function addFavoriteTagsSummary(works) {
     // Get the most popular tag
     const [mostPopularTag] = sortedTags[0];
 
-    // Create summary element
-    const summaryDiv = document.createElement('div');
+    // Create summary element using AO3 structure
+    const summaryDiv = document.createElement('p');
     summaryDiv.id = 'fictrail-favorite-tags-summary';
-    summaryDiv.className = 'fictrail-favorite-tags-summary';
     summaryDiv.innerHTML = `So you've been really into ${escapeHtml(mostPopularTag)} lately. Love it for you.`;
 
-    // Insert after header subtitle
-    const headerSubtitle = document.getElementById('fictrail-subtitle');
-    headerSubtitle.parentNode.insertBefore(summaryDiv, headerSubtitle.nextSibling);
+    // Insert in the designated container
+    const summaryContainer = document.getElementById('fictrail-favorite-tags-summary-container');
+    summaryContainer.appendChild(summaryDiv);
   }
 }
