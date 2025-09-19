@@ -6,14 +6,8 @@ let lastFailedAction = null;
 // Pagination state
 let currentDisplayCount = 20;
 
-function showLoginError(message = ERROR_MESSAGES.LOGIN_REQUIRED) {
-  showError(`
-    <strong>Oops! You're not logged in.</strong><br>
-    ${message}<br><br>
-    <button onclick="window.open('${AO3_BASE_URL}/users/login', '_blank')" class="fictrail-btn-base fictrail-btn">
-      Log In to AO3
-    </button>
-  `);
+function showLoginError() {
+  showFicTrailError('Oops! It looks like you\'ve been logged out of AO3. <a href="https://archiveofourown.org/users/login" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Log in to AO3</a> and then try again.');
 }
 
 function retryLastAction() {
@@ -55,7 +49,7 @@ async function loadFirstPage() {
       return;
     }
     console.error('Error loading first page:', error);
-    showError(ERROR_MESSAGES.FETCH_FAILED);
+    showFicTrailError(ERROR_MESSAGES.FETCH_FAILED);
   }
 }
 
@@ -70,23 +64,26 @@ async function reloadHistory() {
   // Disable buttons while loading
   const loadBtn = document.getElementById('fictrail-load-btn');
   const retryBtn = document.getElementById('fictrail-retry-btn');
-  loadBtn.disabled = true;
+  if (loadBtn) loadBtn.disabled = true;
   if (retryBtn) retryBtn.disabled = true;
 
-  // Clear search bar when reloading
-  document.getElementById('fictrail-search-input').value = '';
+  // Preserve search and filter values when reloading
+  const searchInput = document.getElementById('fictrail-search-input');
+  const fandomFilter = document.getElementById('fictrail-fandom-filter');
+  const preservedSearchValue = searchInput ? searchInput.value : '';
+  const preservedFandomValue = fandomFilter ? fandomFilter.value : '';
 
   // Get pages to load from slider
   const pagesToLoad = getPagesToLoad();
 
-  showLoading(`Loading ${pagesToLoad} ${pagesToLoad === 1 ? 'page' : 'pages'} of ${username}'s fic history...`);
+  showFicTrailLoading(`Loading ${pagesToLoad} ${pagesToLoad === 1 ? 'page' : 'pages'} of ${username}'s fic history...`);
 
   try {
     const result = await fetchMultiplePages(username, pagesToLoad);
     if (result.works && result.works.length > 0) {
-      displayHistory(username, result.works, result.totalPages, pagesToLoad);
+      displayHistory(username, result.works, result.totalPages, pagesToLoad, preservedSearchValue, preservedFandomValue);
     } else {
-      showError(ERROR_MESSAGES.NO_DATA);
+      showFicTrailError(ERROR_MESSAGES.NO_DATA);
     }
   } catch (error) {
     if (error.message === 'NOT_LOGGED_IN') {
@@ -94,18 +91,18 @@ async function reloadHistory() {
       return;
     }
     console.error('Error loading history:', error);
-    showError(ERROR_MESSAGES.FETCH_FAILED);
+    showFicTrailError(ERROR_MESSAGES.FETCH_FAILED);
   } finally {
     // Re-enable buttons after loading completes
     const loadBtn = document.getElementById('fictrail-load-btn');
     const retryBtn = document.getElementById('fictrail-retry-btn');
-    loadBtn.disabled = false;
+    if (loadBtn) loadBtn.disabled = false;
     if (retryBtn) retryBtn.disabled = false;
   }
 }
 
-function displayHistory(username, works, totalPages, actualPagesLoaded) {
-  showSection('fictrail-history-section');
+function displayHistory(username, works, totalPages, actualPagesLoaded, preservedSearchValue = '', preservedFandomValue = '') {
+  showFicTrailResults();
 
   allWorks = works;
   filteredWorks = [...works];
@@ -118,10 +115,13 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
   const uniqueFandoms = new Set(works.flatMap(work => work.fandoms)).size;
 
   // Update individual subtitle elements with proper plural/singular forms
-  document.getElementById('fictrail-username').textContent = username;
-  document.getElementById('fictrail-works-count').textContent = `${workCount} ${workCount === 1 ? 'work' : 'works'}`;
-  document.getElementById('fictrail-fandoms-count').textContent = `${uniqueFandoms} ${uniqueFandoms === 1 ? 'fandom' : 'fandoms'}`;
-  document.getElementById('fictrail-authors-count').textContent = `${uniqueAuthors} ${uniqueAuthors === 1 ? 'author' : 'authors'}`;
+  const worksCountEl = document.getElementById('fictrail-works-count');
+  const fandomsCountEl = document.getElementById('fictrail-fandoms-count');
+  const authorsCountEl = document.getElementById('fictrail-authors-count');
+
+  if (worksCountEl) worksCountEl.textContent = `${workCount} ${workCount === 1 ? 'work' : 'works'}`;
+  if (fandomsCountEl) fandomsCountEl.textContent = `${uniqueFandoms} ${uniqueFandoms === 1 ? 'fandom' : 'fandoms'}`;
+  if (authorsCountEl) authorsCountEl.textContent = `${uniqueAuthors} ${uniqueAuthors === 1 ? 'author' : 'authors'}`;
 
   // Update slider max value to match user's actual page count
   if (totalPages && totalPages > 0) {
@@ -129,46 +129,73 @@ function displayHistory(username, works, totalPages, actualPagesLoaded) {
     const sliderMax = document.querySelector('.fictrail-slider-max');
     const pagesLabel = document.getElementById('fictrail-pages-label');
 
-    slider.max = totalPages;
-    sliderMax.textContent = totalPages;
+    if (slider) slider.max = totalPages;
+    if (sliderMax) sliderMax.textContent = totalPages;
 
     // Update the label with actual page count and current loaded pages
-    if (actualPagesLoaded === totalPages) {
-      pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
-    } else {
-      pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
+    if (pagesLabel) {
+      if (actualPagesLoaded === totalPages) {
+        pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
+      } else {
+        pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
+      }
     }
 
     // Set slider value to the actual pages loaded (for initial load) or keep current value (for reload)
-    if (actualPagesLoaded !== undefined) {
-      slider.value = actualPagesLoaded;
-    } else {
-      const newValue = Math.min(parseInt(slider.value), totalPages);
-      slider.value = newValue;
+    if (slider) {
+      if (actualPagesLoaded !== undefined) {
+        slider.value = actualPagesLoaded;
+      } else {
+        const newValue = Math.min(parseInt(slider.value), totalPages);
+        slider.value = newValue;
+      }
     }
   }
 
   // Show footer with page selector and update button for reload functionality
   const footer = document.getElementById('fictrail-footer');
   const loadBtn = document.getElementById('fictrail-load-btn');
-  footer.style.display = 'block';
-  loadBtn.textContent = 'Reload History';
-  loadBtn.onclick = reloadHistory;
+  if (footer) footer.style.display = 'block';
+  if (loadBtn) {
+    loadBtn.textContent = 'Reload History';
+    loadBtn.onclick = reloadHistory;
+  }
   updateReloadButtonText();
 
   // Add favorite tags summary
   addFavoriteTagsSummary(works);
 
+  // Add search and display functionality
   populateFandomFilter(works);
-  updateResultsCount(works.length);
-  displayWorks(works);
+
+  // Restore preserved search and filter values
+  const searchInput = document.getElementById('fictrail-search-input');
+  const fandomFilter = document.getElementById('fictrail-fandom-filter');
+
+  if (searchInput && preservedSearchValue) {
+    searchInput.value = preservedSearchValue;
+  }
+
+  if (fandomFilter && preservedFandomValue) {
+    fandomFilter.value = preservedFandomValue;
+  }
+
+  // Apply search and filter if values were preserved
+  if (preservedSearchValue || preservedFandomValue) {
+    performSearch(); // This will also apply the filter
+  } else {
+    updateResultsCount(works.length);
+    displayWorks(works);
+  }
+
+  console.log(`Loaded ${works.length} works from ${actualPagesLoaded} pages`);
 }
 
 // Initialize when page loads
 function init() {
   addStyles();
   createFicTrailButton();
-  createOverlay();
+  // Don't create overlay until button is clicked
 }
 
 // Auto-initialization

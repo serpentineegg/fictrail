@@ -1,0 +1,96 @@
+<div class="fictrail-header">
+    <h2 class="heading">📚 FicTrail</h2>
+    <ul class="navigation actions" role="navigation">
+        <li>
+            <a id="fictrail-close" style="cursor: pointer;" tabindex="0">← Back to Plain History</a>
+        </li>
+    </ul>
+</div>
+
+<!-- Loading State -->
+<div id="fictrail-loading" class="fictrail-content-state" style="display: none;">
+    <div class="loading-content">
+        <div class="fictrail-spinner"></div>
+        <h3>Summoning your fic history...</h3>
+        <p id="fictrail-loading-status">Diving deep into your AO3 rabbit hole...</p>
+    </div>
+</div>
+
+<!-- Error State -->
+<div id="fictrail-error" class="fictrail-content-state" style="display: none;">
+    <div class="error-content">
+        <h3>Plot Twist!</h3>
+        <p id="fictrail-error-message">Something went wrong...</p>
+        <div class="fictrail-actions">
+            <button id="fictrail-retry-btn" class="button">Try Again (Please?)</button>
+        </div>
+    </div>
+</div>
+
+<!-- Search Results State -->
+<div id="fictrail-results" class="fictrail-content-state" style="display: none;">
+    <div id="fictrail-subtitle" class="subtitle">
+        <span id="fictrail-works-count"></span>
+        <span id="fictrail-fandoms-count"></span>
+        <span id="fictrail-authors-count"></span>
+    </div>
+    <div id="fictrail-favorite-tags-summary-container"></div>
+
+    <!-- Search and Filter Form -->
+    <form class="fictrail-form">
+        <fieldset class="fictrail-fieldset">
+            <legend>Search and Filter</legend>
+            <div class="fictrail-search-row">
+                <div class="fictrail-search-field">
+                    <label for="fictrail-search-input">Search</label>
+                    <input type="text" id="fictrail-search-input"
+                        placeholder="Search works, authors, fandoms, tags..." />
+                </div>
+                <div class="fictrail-filter-field">
+                    <label for="fictrail-fandom-filter">Fandom</label>
+                    <select id="fictrail-fandom-filter">
+                        <option value="">All Fandoms</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Results Counter -->
+            <div id="fictrail-results-count" class="fictrail-results-counter"></div>
+        </fieldset>
+    </form>
+
+    <!-- Works List -->
+    <div id="fictrail-works-container" style="display: none;">
+        <ol id="fictrail-works-list" class="reading work index group"></ol>
+    </div>
+
+    <!-- No Results -->
+    <div id="fictrail-no-results" class="notice" style="display: none;">
+        <h4>No Results Found</h4>
+        <span>Your search came up empty! Try different keywords or maybe you haven't read that trope yet? 👀</span>
+    </div>
+
+    <h4 class="landmark heading">Pages to Load</h4>
+
+    <!-- Footer with Page Selector -->
+    <form id="fictrail-footer" class="fictrail-form" style="display: none;">
+        <fieldset class="fictrail-fieldset">
+            <label for="fictrail-pages-slider" id="fictrail-pages-label">You have ? pages of history. How deep should we
+                search?</label>
+            <p class="note">Loading multiple pages can be slow. Start with fewer pages for better performance, then
+                reload with more if needed.</p>
+            <div class="fictrail-slider-container">
+                <div class="fictrail-slider-track">
+                    <span class="fictrail-slider-min">1</span>
+                    <input type="range" id="fictrail-pages-slider" min="1" max="100" value="1"
+                        class="fictrail-slider" />
+                    <span class="fictrail-slider-max">100</span>
+                </div>
+            </div>
+
+            <div class="fictrail-actions">
+                <button id="fictrail-load-btn" class="button">Load History</button>
+            </div>
+        </fieldset>
+    </form>
+</div>

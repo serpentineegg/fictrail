@@ -1,0 +1,201 @@
+/* Content states - only one visible at a time */
+.fictrail-content-state {
+    padding-top: 1em;
+}
+
+/* Loading spinner */
+.fictrail-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid;
+    border-color: inherit;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: fictrail-spin 1s linear infinite;
+    margin: 0 auto 1em;
+    opacity: 0.6;
+}
+
+@keyframes fictrail-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Content containers */
+.loading-content,
+.error-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Center buttons in error state */
+.error-content .actions {
+    justify-content: center;
+    display: flex;
+}
+
+/* Subtitle styling in results */
+#fictrail-subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0px 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+#fictrail-subtitle span:not(:first-child)::before {
+    content: " • ";
+    margin-right: 4px;
+}
+
+/* Favorite tags summary */
+#fictrail-favorite-tags-summary-container {
+    text-align: center;
+    font-style: italic;
+}
+
+/* Form layout */
+.fictrail-fieldset {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.fictrail-search-row {
+    display: flex;
+    gap: 1em;
+    align-items: end;
+}
+
+.fictrail-search-field {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+.fictrail-filter-field {
+    flex: 0 0 250px;
+    max-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+.fictrail-search-field label,
+.fictrail-filter-field label {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.fictrail-actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Results counter */
+.fictrail-results-counter {
+    padding-top: 0.8em;
+    font-size: 0.9em;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Form inputs */
+#fictrail-search-input,
+#fictrail-fandom-filter {
+    width: auto !important;
+    max-width: 100%;
+    height: 2.5em !important;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.2;
+}
+
+#fictrail-search-input:focus,
+#fictrail-fandom-filter:focus {
+    outline: 2px solid;
+    outline-color: inherit;
+    outline-offset: 1px;
+}
+
+/* Search result highlighting */
+.fictrail-highlight {
+    font-weight: bold !important;
+}
+
+.fictrail-highlight-text {
+    font-weight: bold !important;
+    text-decoration: underline !important;
+}
+
+/* Slider styling */
+.fictrail-slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin: 1em 0;
+}
+
+.fictrail-slider-track {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+}
+
+.fictrail-slider-min,
+.fictrail-slider-max {
+    font-size: 0.8em;
+    min-width: 1.5em;
+    text-align: center;
+}
+
+.fictrail-slider {
+    width: 200px;
+}
+
+.fictrail-load-more-container {
+    margin-bottom: 2em;
+    width: 100%;
+    text-align: center;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    /* Search form responsive */
+    .fictrail-search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .fictrail-search-field,
+    .fictrail-filter-field {
+        flex: none;
+        max-width: none;
+    }
+    
+    /* Subtitle responsive */
+    #fictrail-subtitle {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    #fictrail-subtitle span:not(:first-child)::before {
+        display: none;
+    }
+    
+    /* Hide favorite tags summary on smaller screens */
+    #fictrail-favorite-tags-summary-container {
+        display: none;
+    }
+    
+    /* Slider responsive */
+    .fictrail-slider-track {
+        gap: 0.5em;
+    }
+    
+    .fictrail-slider {
+        width: 100%;
+    }
+}

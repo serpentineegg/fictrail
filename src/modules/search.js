@@ -6,7 +6,6 @@ function performSearch() {
     filteredWorks = [...allWorks];
     filteredWorks.forEach(work => {
       work.matchingTags = [];
-      work.matchingSummary = null;
     });
     // Apply filter which will show the count
     applyFilter();
@@ -14,7 +13,6 @@ function performSearch() {
   } else {
     filteredWorks = allWorks.filter(work => {
       const matchingTags = [];
-      let matchingSummary = null;
 
       if (work.relationships) {
         work.relationships.forEach(rel => {
@@ -38,27 +36,18 @@ function performSearch() {
         });
       }
 
-      // Check for summary match and extract fragment
-      if (work.summary && work.summary.toLowerCase().includes(query)) {
-        const summaryLower = work.summary.toLowerCase();
-        const queryIndex = summaryLower.indexOf(query);
-        const start = Math.max(0, queryIndex - 50);
-        const end = Math.min(work.summary.length, queryIndex + query.length + 50);
-        let fragment = work.summary.substring(start, end);
-
-        if (start > 0) fragment = '...' + fragment;
-        if (end < work.summary.length) fragment = fragment + '...';
-
-        matchingSummary = fragment;
-      }
 
       work.matchingTags = matchingTags;
-      work.matchingSummary = matchingSummary;
+
+      // Extract text from HTML summary for searching
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = work.summary || '';
+      const summaryText = tempDiv.textContent || tempDiv.innerText || '';
 
       return work.title.toLowerCase().includes(query) ||
                      work.author.toLowerCase().includes(query) ||
                      work.fandoms.some(fandom => fandom.toLowerCase().includes(query)) ||
-                     work.summary.toLowerCase().includes(query) ||
+                     summaryText.toLowerCase().includes(query) ||
                      matchingTags.length > 0 ||
                      (work.tags && work.tags.some(tag => tag.toLowerCase().includes(query)));
     });
