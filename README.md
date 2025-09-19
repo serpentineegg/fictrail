@@ -21,6 +21,10 @@ Built with flaming love for the AO3 community.
    - Look for the "FicTrail" button in the navigation bar (next to "Full History")
    - Click it to open your reading history and start searching!
 
+## Development
+
+See [Development.md](Development.md) for details on building and developing FicTrail.
+
 ## Privacy
 
 All data processing happens locally in your browser. We don't collect, store, or transmit your data.
