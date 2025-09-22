@@ -22,7 +22,7 @@ function addToHistoryPage() {
   // Create the button using AO3's button styles
   const button = document.createElement('a');
   button.id = 'fictrail-history-btn';
-  button.textContent = '📚 FicTrail';
+  button.textContent = 'FicTrail';
   button.style.cursor = 'pointer';
   button.tabIndex = 0;
 
