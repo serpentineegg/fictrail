@@ -6,7 +6,7 @@ Supports search by title, author, fandom, and summary. Full-text search is on th
 
 Built with flaming love for the AO3 community.
 
-<img width="1032" height="145" alt="Screenshot" src="https://github.com/user-attachments/assets/6b3a5ef0-1b30-4970-a8e5-bf021e9abdd7" />
+<img width="998" height="147" alt="Screenshot" src="https://github.com/user-attachments/assets/35065f0f-d4d0-452b-9fed-6d5e240364d6" />
 
 ## Installation
 
