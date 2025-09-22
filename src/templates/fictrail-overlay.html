@@ -1,11 +1,30 @@
-<div class="fictrail-header">
-    <h2 class="heading">📚 FicTrail</h2>
-    <ul class="navigation actions" role="navigation">
-        <li>
-            <a id="fictrail-close" style="cursor: pointer;" tabindex="0">← Back to Plain History</a>
-        </li>
-    </ul>
-</div>
+<!--Descriptive page name, messages and instructions-->
+<h2 class="heading">
+    History + FicTrail
+</h2>
+<!--/descriptions-->
+
+<!--subnav-->
+<ul class="navigation actions" role="navigation">
+    <li>
+        <span class="current">📚 FicTrail</span>
+    </li>
+    <li>
+        <a href="/users/painless/readings">Full History</a>
+    </li>
+    <li>
+        <a href="/users/painless/readings?show=to-read">Marked for Later</a>
+    </li>
+    <li>
+        <a data-confirm="Are you sure you want to clear your History and Marked for Later lists? This cannot be undone!" rel="nofollow" data-method="post" href="/users/painless/readings/clear">Clear History</a>
+    </li>
+</ul>
+<!--/subnav-->
+
+<!--main content-->
+<h3 class="landmark heading">
+    History Items + FicTrail
+</h3>
 
 <!-- Loading State -->
 <div id="fictrail-loading" class="fictrail-content-state" style="display: none;">
@@ -94,3 +113,4 @@
         </fieldset>
     </form>
 </div>
+<!--/content-->
