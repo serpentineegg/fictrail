@@ -427,7 +427,7 @@ function getTagsToDisplay(work) {
   const hasSearchQuery = searchInput && searchInput.value.trim();
 
   // Always include warnings
-  const warningTags = (work.warnings || []).map(tag => ({type: 'warning', value: tag}));
+  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
 
   if (hasSearchQuery) {
     // Show warnings plus matching tags during search
@@ -439,9 +439,9 @@ function getTagsToDisplay(work) {
     // Show all tags when no search query
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => ({type: 'relationship', value: tag})),
-      ...(work.characters || []).map(tag => ({type: 'character', value: tag})),
-      ...(work.freeforms || []).map(tag => ({type: 'freeform', value: tag}))
+      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
+      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
+      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
     ];
   }
 }
