@@ -152,6 +152,7 @@
 .fictrail-load-more-container {
     width: 100%;
     text-align: center;
+    margin-top: 1.5em;
 }
 
 /* FicTrail summary with height limit and scrolling */
@@ -175,8 +176,14 @@
 }
 
 /* Works list */
+#fictrail-works-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
 #fictrail-works-list {
-    margin: 1.5em 0;
+    margin: 1.5em 0 0;
 }
 
 #fictrail-works-list li.work {
