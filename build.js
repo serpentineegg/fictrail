@@ -7,7 +7,7 @@ const { exec } = require('child_process');
 const BUILD_CONFIG = {
   srcDir: './src',
   distDir: './dist',
-  outputFile: './dist/fictrail.user.js',
+  outputFile: './dist/script.user.js',
   headerFile: './src/userscript-header.txt',
   modulesDir: 'modules',
   templatesDir: 'templates',

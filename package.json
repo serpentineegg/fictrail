@@ -5,7 +5,7 @@
   "scripts": {
     "build": "node build.js",
     "build:clipboard": "node build.js --clipboard",
-    "dev": "node build.js && echo 'Build complete - check dist/fictrail.user.js'",
+    "dev": "node build.js && echo 'Build complete - check dist/script.user.js'",
     "watch": "nodemon --watch src --exec 'npm run build'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

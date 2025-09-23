@@ -11,7 +11,7 @@ npm install
 This installs dev tooling (ESLint). The build itself has no runtime dependencies.
 
 ## Build
-- Basic build (writes `dist/fictrail.user.js` and copies `script-info.md`):
+- Basic build (writes `dist/script.user.js` and copies `script-info.md`):
 ```bash
 npm run build
 ```
@@ -26,7 +26,7 @@ npm run build:clipboard
 node build.js --help
 ```
 
-After building, open `dist/fictrail.user.js` in your browser to install it into Tampermonkey.
+After building, open `dist/script.user.js` in your browser to install it into Tampermonkey.
 
 There is a convenience watcher script that rebuilds on file changes. It requires `nodemon`:
 ```bash
