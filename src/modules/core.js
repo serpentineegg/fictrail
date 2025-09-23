@@ -132,12 +132,13 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
     if (slider) slider.max = totalPages;
     if (sliderMax) sliderMax.textContent = totalPages;
 
-    // Update the label with actual page count and current loaded pages
-    if (pagesLabel) {
+    // Update the status text with actual page count and current loaded pages
+    const pagesStatusText = document.getElementById('fictrail-pages-status-text');
+    if (pagesStatusText) {
       if (actualPagesLoaded === totalPages) {
-        pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
+        pagesStatusText.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
       } else {
-        pagesLabel.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
+        pagesStatusText.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
       }
     }
 
@@ -152,10 +153,10 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
     }
   }
 
-  // Show footer with page selector and update button for reload functionality
-  const footer = document.getElementById('fictrail-footer');
+  // Show pages info with page selector and update button for reload functionality
+  const pagesInfo = document.getElementById('fictrail-pages-info');
   const loadBtn = document.getElementById('fictrail-load-btn');
-  if (footer) footer.style.display = 'block';
+  if (pagesInfo) pagesInfo.style.display = 'block';
   if (loadBtn) {
     loadBtn.textContent = 'Reload History';
     loadBtn.onclick = reloadHistory;
