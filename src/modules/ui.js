@@ -320,7 +320,8 @@ function attachEventListeners() {
     { id: 'fictrail-search-input', event: 'input', handler: debounce(performSearch, 300) },
     { id: 'fictrail-fandom-filter', event: 'change', handler: applyFilter },
     { id: 'fictrail-pages-slider', event: 'input', handler: updatePagesValue },
-    { id: 'fictrail-pages-toggle', event: 'click', handler: togglePagesSection }
+    { id: 'fictrail-pages-toggle', event: 'click', handler: togglePagesSection },
+    { id: 'fictrail-top-btn', event: 'click', handler: scrollToTop }
   ];
 
   eventMap.forEach(({ id, event, handler }) => {
@@ -419,6 +420,12 @@ function showFicTrailError(message) {
 
 function showFicTrailResults() {
   showFicTrailState('fictrail-results');
+
+  // Show bottom actions when results are displayed
+  const bottomActions = document.getElementById('fictrail-bottom-actions');
+  if (bottomActions) {
+    bottomActions.style.display = 'block';
+  }
 }
 
 function updatePagesValue() {
@@ -452,16 +459,21 @@ function displayWorks(works, append = false) {
   const worksListContainer = document.getElementById('fictrail-works-container');
   const worksList = document.getElementById('fictrail-works-list');
   const noResults = document.getElementById('fictrail-no-results');
+  const bottomActions = document.getElementById('fictrail-bottom-actions');
 
   if (works.length === 0) {
     worksListContainer.style.display = 'none';
     noResults.style.display = 'block';
     hideLoadMoreButton();
+    // Hide bottom actions when no results
+    if (bottomActions) bottomActions.style.display = 'none';
     return;
   }
 
   worksListContainer.style.display = 'block';
   noResults.style.display = 'none';
+  // Show bottom actions when there are results
+  if (bottomActions) bottomActions.style.display = 'block';
 
   // Reset display count if not appending (new search/filter)
   if (!append) {
@@ -677,4 +689,23 @@ function highlightSearchTerms(html, searchQuery) {
 
   highlightInTextNodes(tempDiv);
   return tempDiv.innerHTML;
+}
+
+function scrollToTop(event) {
+  event.preventDefault();
+
+  // Scroll to the top of the main element (where FicTrail is)
+  const mainElement = document.getElementById('main');
+  if (mainElement) {
+    mainElement.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  } else {
+    // Fallback to scrolling to top of page
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
 }
