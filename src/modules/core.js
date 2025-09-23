@@ -127,20 +127,9 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
   if (totalPages && totalPages > 0) {
     const slider = document.getElementById('fictrail-pages-slider');
     const sliderMax = document.querySelector('.fictrail-slider-max');
-    const pagesLabel = document.getElementById('fictrail-pages-label');
 
     if (slider) slider.max = totalPages;
     if (sliderMax) sliderMax.textContent = totalPages;
-
-    // Update the status text with actual page count and current loaded pages
-    const pagesStatusText = document.getElementById('fictrail-pages-status-text');
-    if (pagesStatusText) {
-      if (actualPagesLoaded === totalPages) {
-        pagesStatusText.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. All ${totalPages === 1 ? 'page' : 'pages'} loaded.`;
-      } else {
-        pagesStatusText.textContent = `You have ${totalPages} ${totalPages === 1 ? 'page' : 'pages'} of history. Now ${actualPagesLoaded} ${actualPagesLoaded === 1 ? 'page is' : 'pages are'} loaded. Shall we go deeper?`;
-      }
-    }
 
     // Set slider value to the actual pages loaded (for initial load) or keep current value (for reload)
     if (slider) {
@@ -150,6 +139,11 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
         const newValue = Math.min(parseInt(slider.value), totalPages);
         slider.value = newValue;
       }
+    }
+
+    // Update toggle text with page information
+    if (totalPages && totalPages > 0) {
+      updateToggleText(actualPagesLoaded, totalPages);
     }
   }
 

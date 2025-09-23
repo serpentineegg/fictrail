@@ -105,6 +105,17 @@ function createOverlay() {
   if (searchInput) searchInput.addEventListener('input', debounce(performSearch, 300));
   if (fandomFilter) fandomFilter.addEventListener('change', applyFilter);
   if (pagesSlider) pagesSlider.addEventListener('input', updatePagesValue);
+
+  const pagesToggle = document.getElementById('fictrail-pages-toggle');
+  if (pagesToggle) {
+    pagesToggle.addEventListener('click', togglePagesSection);
+    pagesToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        togglePagesSection();
+      }
+    });
+  }
 }
 
 function openFicTrail() {
@@ -517,5 +528,31 @@ function hideLoadMoreButton() {
   const loadMoreContainer = document.getElementById('fictrail-load-more-container');
   if (loadMoreContainer) {
     loadMoreContainer.style.display = 'none';
+  }
+}
+
+function togglePagesSection() {
+  const toggle = document.getElementById('fictrail-pages-toggle');
+  const content = document.getElementById('fictrail-pages-content');
+
+  if (!toggle || !content) return;
+
+  const isExpanded = content.classList.contains('expanded');
+
+  if (isExpanded) {
+    // Collapse
+    toggle.classList.remove('expanded');
+    content.classList.remove('expanded');
+  } else {
+    // Expand
+    toggle.classList.add('expanded');
+    content.classList.add('expanded');
+  }
+}
+
+function updateToggleText(loadedPages, totalPages) {
+  const toggleText = document.getElementById('fictrail-toggle-text');
+  if (toggleText && loadedPages && totalPages) {
+    toggleText.textContent = `History Pages Loaded (${loadedPages}/${totalPages})`;
   }
 }

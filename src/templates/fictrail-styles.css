@@ -246,6 +246,87 @@
     }
 }
 
+/* Collapsible pages section */
+.fictrail-pages-section {
+    margin: 1em 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Toggle header */
+.fictrail-pages-toggle {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.8em 1em;
+    border-bottom: 1px solid transparent;
+    transition: background-color 0.2s ease;
+}
+
+.fictrail-pages-toggle:hover,
+.fictrail-pages-toggle:focus {
+    background: rgba(0, 0, 0, 0.05);
+    outline: 2px solid;
+    outline-color: inherit;
+    outline-offset: -2px;
+}
+
+.fictrail-toggle-header {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 1em;
+}
+
+.fictrail-toggle-icon {
+    font-family: monospace;
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+/* Rotate icon when expanded */
+.fictrail-pages-toggle.expanded .fictrail-toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* Add border when expanded */
+.fictrail-pages-toggle.expanded {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Collapsible content */
+.fictrail-pages-content {
+    padding: 0;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+}
+
+.fictrail-pages-content.expanded {
+    padding: 0 1em 1em;
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .fictrail-pages-section {
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .fictrail-pages-toggle:hover,
+    .fictrail-pages-toggle:focus {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .fictrail-pages-toggle.expanded {
+        border-bottom-color: rgba(255, 255, 255, 0.2);
+    }
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
     /* Search form responsive */
