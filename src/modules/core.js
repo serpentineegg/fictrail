@@ -10,49 +10,6 @@ function showLoginError() {
   showFicTrailError('Oops! It looks like you\'ve been logged out of AO3. <a href="https://archiveofourown.org/users/login" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Log in to AO3</a> and then try again.');
 }
 
-function retryLastAction() {
-  if (lastFailedAction === 'reloadHistory') {
-    reloadHistory();
-  } else {
-    loadFirstPage();
-  }
-}
-
-async function loadFirstPage() {
-  lastFailedAction = 'loadFirstPage';
-  const username = getUsername();
-  if (!username) {
-    showLoginError();
-    return;
-  }
-
-  try {
-    // Check if we're on page 1 of readings - if so, parse current DOM instantly
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentPage = parseInt(urlParams.get('page')) || 1;
-
-    if (window.location.pathname.includes('/readings') && currentPage === 1 && !urlParams.has('show')) {
-      const works = scrapeHistoryFromPage(document);
-      const totalPages = getTotalPages(document);
-
-      if (works && works.length > 0) {
-        displayHistory(username, works, totalPages, 1);
-        return;
-      }
-    }
-
-    // Fallback: use reloadHistory to fetch first page
-    await reloadHistory();
-  } catch (error) {
-    if (error.message === 'NOT_LOGGED_IN') {
-      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
-      return;
-    }
-    console.error('Error loading first page:', error);
-    showFicTrailError(ERROR_MESSAGES.FETCH_FAILED);
-  }
-}
-
 async function reloadHistory() {
   lastFailedAction = 'reloadHistory';
   const username = getUsername();
@@ -81,7 +38,7 @@ async function reloadHistory() {
   try {
     const result = await fetchMultiplePages(username, pagesToLoad);
     if (result.works && result.works.length > 0) {
-      displayHistory(username, result.works, result.totalPages, pagesToLoad, preservedSearchValue, preservedFandomValue);
+      displayHistory(username, result.works, result.totalPages, Math.min(pagesToLoad, result.totalPages), preservedSearchValue, preservedFandomValue);
     } else {
       showFicTrailError(ERROR_MESSAGES.NO_DATA);
     }
@@ -136,8 +93,7 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
       if (actualPagesLoaded !== undefined) {
         slider.value = actualPagesLoaded;
       } else {
-        const newValue = Math.min(parseInt(slider.value), totalPages);
-        slider.value = newValue;
+        slider.value = Math.min(parseInt(slider.value), totalPages);
       }
     }
 

@@ -2,6 +2,8 @@
 const AO3_BASE_URL = 'https://archiveofourown.org';
 const MAX_PAGES_FETCH = 100;
 const ITEMS_PER_PAGE = 20;
+const DEFAULT_PAGES_TO_LOAD = 10;
+const PAGE_FETCH_DELAY = 100;
 
 // Error Messages
 const ERROR_MESSAGES = {

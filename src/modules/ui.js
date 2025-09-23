@@ -66,6 +66,15 @@ function createOverlay() {
   // Insert FicTrail inside #main
   mainElement.appendChild(fictrailDiv);
 
+  // Set default slider value to DEFAULT_PAGES_TO_LOAD after creating the overlay
+  setTimeout(() => {
+    const slider = document.getElementById('fictrail-pages-slider');
+    if (slider) {
+      slider.value = DEFAULT_PAGES_TO_LOAD;
+      // Update any display elements that show the current value
+      updateReloadButtonText();
+    }
+  }, 0);
 
   // Add event listeners with error checking
   const closeBtn = document.getElementById('fictrail-close');
@@ -94,11 +103,11 @@ function createOverlay() {
     });
   }
   if (retryBtn) {
-    retryBtn.addEventListener('click', retryLastAction);
+    retryBtn.addEventListener('click', reloadHistory);
     retryBtn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        retryLastAction();
+        reloadHistory();
       }
     });
   }
@@ -143,7 +152,7 @@ function openFicTrail() {
     // Show loading state immediately
     showFicTrailLoading();
     setTimeout(() => {
-      loadFirstPage();
+      reloadHistory();
     }, 100);
   } else {
     // Show existing results
@@ -204,20 +213,25 @@ function updatePagesValue() {
 }
 
 function updateReloadButtonText() {
-  const currentPages = parseInt(document.getElementById('fictrail-pages-slider').value);
+  const slider = document.getElementById('fictrail-pages-slider');
+  if (!slider) return;
+
+  const currentPages = parseInt(slider.value);
   const pagesInfo = document.getElementById('fictrail-pages-info');
   const loadBtn = document.getElementById('fictrail-load-btn');
 
+  if (!loadBtn) return;
+
   // Check if we're in reload mode (pagesInfo is visible)
-  if (pagesInfo.style.display === 'block') {
+  if (pagesInfo && pagesInfo.style.display === 'block') {
     loadBtn.textContent = `Reload History (${currentPages} ${currentPages === 1 ? 'page' : 'pages'})`;
   }
 }
 
 function getPagesToLoad() {
   const slider = document.getElementById('fictrail-pages-slider');
-  // If slider doesn't exist yet, default to 1 page
-  if (!slider) return 1;
+  // If slider doesn't exist yet, use default
+  if (!slider) return DEFAULT_PAGES_TO_LOAD;
   return parseInt(slider.value);
 }
 
