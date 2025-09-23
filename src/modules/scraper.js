@@ -1,25 +1,5 @@
 // Scraper Module - AO3 history fetching and parsing
 
-// Safely extract text content while preserving line breaks from HTML elements
-function extractTextWithLineBreaks(element) {
-  // Clone the element to avoid modifying the original
-  const clone = element.cloneNode(true);
-
-  // Replace block elements with newlines
-  const blockElements = clone.querySelectorAll('p, div, br');
-  blockElements.forEach(el => {
-    if (el.tagName === 'BR') {
-      el.replaceWith('\n');
-    } else {
-      // Add newline after block elements
-      el.insertAdjacentText('afterend', '\n');
-    }
-  });
-
-  // Get text content and clean up extra whitespace
-  return clone.textContent.replace(/\n\s*\n/g, '\n').trim();
-}
-
 function scrapeHistoryFromPage(doc) {
   const works = [];
   const workItems = doc.querySelectorAll('ol.reading li.work');
@@ -219,7 +199,7 @@ async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
     showFicTrailLoading(`Loading page ${page} of ${pagesToFetch}...`);
     const pageWorks = await fetchHistoryPage(username, page);
     works.push(...pageWorks);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, PAGE_FETCH_DELAY));
   }
 
   return { works: works, totalPages: totalPages };

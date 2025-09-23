@@ -66,24 +66,23 @@ function createOverlay() {
   // Insert FicTrail inside #main
   mainElement.appendChild(fictrailDiv);
 
+  // Set default slider value to DEFAULT_PAGES_TO_LOAD after creating the overlay
+  setTimeout(() => {
+    const slider = document.getElementById('fictrail-pages-slider');
+    if (slider) {
+      slider.value = DEFAULT_PAGES_TO_LOAD;
+      // Update any display elements that show the current value
+      updateReloadButtonText();
+    }
+  }, 0);
 
   // Add event listeners with error checking
-  const closeBtn = document.getElementById('fictrail-close');
   const loadBtn = document.getElementById('fictrail-load-btn');
   const retryBtn = document.getElementById('fictrail-retry-btn');
   const searchInput = document.getElementById('fictrail-search-input');
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
   const pagesSlider = document.getElementById('fictrail-pages-slider');
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeFicTrail);
-    closeBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        closeFicTrail();
-      }
-    });
-  }
   if (loadBtn) {
     loadBtn.addEventListener('click', reloadHistory);
     loadBtn.addEventListener('keydown', (e) => {
@@ -94,17 +93,28 @@ function createOverlay() {
     });
   }
   if (retryBtn) {
-    retryBtn.addEventListener('click', retryLastAction);
+    retryBtn.addEventListener('click', reloadHistory);
     retryBtn.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        retryLastAction();
+        reloadHistory();
       }
     });
   }
   if (searchInput) searchInput.addEventListener('input', debounce(performSearch, 300));
   if (fandomFilter) fandomFilter.addEventListener('change', applyFilter);
   if (pagesSlider) pagesSlider.addEventListener('input', updatePagesValue);
+
+  const pagesToggle = document.getElementById('fictrail-pages-toggle');
+  if (pagesToggle) {
+    pagesToggle.addEventListener('click', togglePagesSection);
+    pagesToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        togglePagesSection();
+      }
+    });
+  }
 }
 
 function openFicTrail() {
@@ -132,28 +142,12 @@ function openFicTrail() {
     // Show loading state immediately
     showFicTrailLoading();
     setTimeout(() => {
-      loadFirstPage();
+      reloadHistory();
     }, 100);
   } else {
     // Show existing results
     showFicTrailResults();
   }
-}
-
-function closeFicTrail() {
-  const mainElement = document.getElementById('main');
-  const fictrailContainer = document.getElementById('fictrail-container');
-
-  if (mainElement) {
-    // Show all children of #main except FicTrail
-    Array.from(mainElement.children).forEach(child => {
-      if (child.id !== 'fictrail-container') {
-        child.style.display = '';
-      }
-    });
-  }
-
-  if (fictrailContainer) fictrailContainer.style.display = 'none';
 }
 
 // Helper functions to show different content states
@@ -193,20 +187,25 @@ function updatePagesValue() {
 }
 
 function updateReloadButtonText() {
-  const currentPages = parseInt(document.getElementById('fictrail-pages-slider').value);
-  const footer = document.getElementById('fictrail-footer');
+  const slider = document.getElementById('fictrail-pages-slider');
+  if (!slider) return;
+
+  const currentPages = parseInt(slider.value);
+  const pagesInfo = document.getElementById('fictrail-pages-info');
   const loadBtn = document.getElementById('fictrail-load-btn');
 
-  // Check if we're in reload mode (footer is visible)
-  if (footer.style.display === 'block') {
+  if (!loadBtn) return;
+
+  // Check if we're in reload mode (pagesInfo is visible)
+  if (pagesInfo && pagesInfo.style.display === 'block') {
     loadBtn.textContent = `Reload History (${currentPages} ${currentPages === 1 ? 'page' : 'pages'})`;
   }
 }
 
 function getPagesToLoad() {
   const slider = document.getElementById('fictrail-pages-slider');
-  // If slider doesn't exist yet, default to 1 page
-  if (!slider) return 1;
+  // If slider doesn't exist yet, use default
+  if (!slider) return DEFAULT_PAGES_TO_LOAD;
   return parseInt(slider.value);
 }
 
@@ -219,8 +218,7 @@ function displayWorks(works, append = false) {
   if (works.length === 0) {
     worksListContainer.style.display = 'none';
     noResults.style.display = 'block';
-    // Remove existing load more button and message when there are no results
-    removeLoadMoreElements();
+    hideLoadMoreButton();
     return;
   }
 
@@ -340,62 +338,12 @@ function displayWorks(works, append = false) {
     worksList.innerHTML = worksHTML;
   }
 
-  // Remove existing load more elements before adding new ones
-  removeLoadMoreElements();
-
-  // Add load more button if there are more results
+  // Show or hide load more button based on remaining results
   if (hasMoreResults) {
-    createLoadMoreButton(works, currentDisplayCount);
+    showLoadMoreButton(works, currentDisplayCount);
+  } else {
+    hideLoadMoreButton();
   }
-}
-
-function removeLoadMoreElements() {
-  const existingContainer = document.getElementById('fictrail-load-more-container');
-  if (existingContainer) existingContainer.remove();
-}
-
-function createLoadMoreButton(works, currentCount) {
-  const worksList = document.getElementById('fictrail-works-list');
-  const remainingCount = works.length - currentCount;
-  const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
-
-  // Create container for load more elements using AO3 structure
-  const containerDiv = document.createElement('div');
-  containerDiv.id = 'fictrail-load-more-container';
-  containerDiv.className = 'fictrail-load-more-container';
-
-  // Create load more message
-  const messageDiv = document.createElement('div');
-  messageDiv.id = 'fictrail-load-more-message';
-  messageDiv.innerHTML = `
-    <p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>
-  `;
-
-  // Create load more button using AO3 actions structure
-  const buttonDiv = document.createElement('div');
-  buttonDiv.className = 'actions';
-  buttonDiv.innerHTML = `
-    <a id="fictrail-load-more-button" style="cursor: pointer;" tabindex="0">
-      Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}
-    </a>
-  `;
-
-  // Add message and button to container
-  containerDiv.appendChild(messageDiv);
-  containerDiv.appendChild(buttonDiv);
-
-  // Insert container after the works-list div
-  worksList.parentNode.insertBefore(containerDiv, worksList.nextSibling);
-
-  // Add event listener to the load more button
-  const loadMoreButton = document.getElementById('fictrail-load-more-button');
-  loadMoreButton.addEventListener('click', loadMoreWorks);
-  loadMoreButton.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      loadMoreWorks();
-    }
-  });
 }
 
 function loadMoreWorks() {
@@ -527,4 +475,72 @@ function generateTagsSection(work) {
       ${tagItems}
     </ul>
   `;
+}
+
+function showLoadMoreButton(works, currentCount) {
+  const loadMoreContainer = document.getElementById('fictrail-load-more-container');
+  const loadMoreMessage = document.getElementById('fictrail-load-more-message');
+  const loadMoreButton = document.getElementById('fictrail-load-more-button');
+
+  if (!loadMoreContainer || !loadMoreMessage || !loadMoreButton) return;
+
+  const remainingCount = works.length - currentCount;
+  const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
+
+  // Update message
+  loadMoreMessage.innerHTML = `
+    <p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>
+  `;
+
+  // Update button text
+  loadMoreButton.textContent = `Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}`;
+
+  // Show the container
+  loadMoreContainer.style.display = 'block';
+
+  // Remove existing event listeners and add new one
+  const newButton = loadMoreButton.cloneNode(true);
+  loadMoreButton.parentNode.replaceChild(newButton, loadMoreButton);
+
+  // Add event listeners
+  newButton.addEventListener('click', loadMoreWorks);
+  newButton.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      loadMoreWorks();
+    }
+  });
+}
+
+function hideLoadMoreButton() {
+  const loadMoreContainer = document.getElementById('fictrail-load-more-container');
+  if (loadMoreContainer) {
+    loadMoreContainer.style.display = 'none';
+  }
+}
+
+function togglePagesSection() {
+  const toggle = document.getElementById('fictrail-pages-toggle');
+  const content = document.getElementById('fictrail-pages-content');
+
+  if (!toggle || !content) return;
+
+  const isExpanded = content.classList.contains('expanded');
+
+  if (isExpanded) {
+    // Collapse
+    toggle.classList.remove('expanded');
+    content.classList.remove('expanded');
+  } else {
+    // Expand
+    toggle.classList.add('expanded');
+    content.classList.add('expanded');
+  }
+}
+
+function updateToggleText(loadedPages, totalPages) {
+  const toggleText = document.getElementById('fictrail-toggle-text');
+  if (toggleText && loadedPages && totalPages) {
+    toggleText.textContent = `History Pages Loaded (${loadedPages}/${totalPages})`;
+  }
 }

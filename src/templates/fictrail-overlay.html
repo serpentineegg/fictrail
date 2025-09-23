@@ -16,7 +16,8 @@
         <a href="/users/painless/readings?show=to-read">Marked for Later</a>
     </li>
     <li>
-        <a data-confirm="Are you sure you want to clear your History and Marked for Later lists? This cannot be undone!" rel="nofollow" data-method="post" href="/users/painless/readings/clear">Clear History</a>
+        <a data-confirm="Are you sure you want to clear your History and Marked for Later lists? This cannot be undone!"
+           rel="nofollow" data-method="post" href="/users/painless/readings/clear">Clear History</a>
     </li>
 </ul>
 <!--/subnav-->
@@ -63,7 +64,7 @@
                 <div class="fictrail-search-field">
                     <label for="fictrail-search-input">Search</label>
                     <input type="text" id="fictrail-search-input"
-                        placeholder="Search works, authors, fandoms, tags..." />
+                           placeholder="Search works, authors, fandoms, tags..."/>
                 </div>
                 <div class="fictrail-filter-field">
                     <label for="fictrail-fandom-filter">Fandom</label>
@@ -72,15 +73,58 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Results Counter -->
-            <div id="fictrail-results-count" class="fictrail-results-counter"></div>
         </fieldset>
     </form>
+
+    <!-- Pages Loaded Info - Collapsible -->
+    <div id="fictrail-pages-info" class="fictrail-pages-section" style="display: none;">
+        <!-- Toggle Header -->
+        <div class="fictrail-pages-toggle" id="fictrail-pages-toggle" tabindex="0">
+            <h4 class="fictrail-toggle-header">
+                <span class="fictrail-toggle-icon">▶</span>
+                <span class="fictrail-toggle-text" id="fictrail-toggle-text">History Pages Loaded</span>
+            </h4>
+        </div>
+
+        <!-- Collapsible Content -->
+        <div class="fictrail-pages-content" id="fictrail-pages-content">
+            <form class="fictrail-form">
+                <fieldset class="fictrail-fieldset">
+                    <p class="note">Loading many pages can be slow. Start with fewer pages for better performance,
+                        then reload with more if needed.</p>
+
+                    <div class="fictrail-slider-field">
+                        <label for="fictrail-pages-slider" class="fictrail-slider-label">Pages to load</label>
+                        <div class="fictrail-slider-track">
+                            <span class="fictrail-slider-min">1</span>
+                            <input type="range" id="fictrail-pages-slider" min="1" max="100" value="1"
+                                   class="fictrail-slider"/>
+                            <span class="fictrail-slider-max">100</span>
+                        </div>
+                    </div>
+
+                    <div class="fictrail-actions actions">
+                        <a id="fictrail-load-btn" style="cursor: pointer;" tabindex="0">Load History</a>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Counter -->
+    <div id="fictrail-results-count" class="fictrail-results-counter"></div>
 
     <!-- Works List -->
     <div id="fictrail-works-container" style="display: none;">
         <ol id="fictrail-works-list" class="reading work index group"></ol>
+    </div>
+
+    <!-- Load More Container -->
+    <div id="fictrail-load-more-container" class="fictrail-load-more-container" style="display: none;">
+        <div id="fictrail-load-more-message"></div>
+        <div class="actions">
+            <a id="fictrail-load-more-button" style="cursor: pointer;" tabindex="0"></a>
+        </div>
     </div>
 
     <!-- No Results -->
@@ -88,29 +132,5 @@
         <h4>No Results Found</h4>
         <span>Your search came up empty! Try different keywords or maybe you haven't read that trope yet?</span>
     </div>
-
-    <h4 class="landmark heading">Pages to Load</h4>
-
-    <!-- Footer with Page Selector -->
-    <form id="fictrail-footer" class="fictrail-form" style="display: none;">
-        <fieldset class="fictrail-fieldset">
-            <label for="fictrail-pages-slider" id="fictrail-pages-label">You have ? pages of history. How deep should we
-                search?</label>
-            <p class="note">Loading multiple pages can be slow. Start with fewer pages for better performance, then
-                reload with more if needed.</p>
-            <div class="fictrail-slider-container">
-                <div class="fictrail-slider-track">
-                    <span class="fictrail-slider-min">1</span>
-                    <input type="range" id="fictrail-pages-slider" min="1" max="100" value="1"
-                        class="fictrail-slider" />
-                    <span class="fictrail-slider-max">100</span>
-                </div>
-            </div>
-
-            <div class="fictrail-actions actions">
-                <a id="fictrail-load-btn" style="cursor: pointer;" tabindex="0">Load History</a>
-            </div>
-        </fieldset>
-    </form>
 </div>
 <!--/content-->
