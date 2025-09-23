@@ -28,13 +28,33 @@ async function reloadHistory() {
   const preservedSearchValue = searchInput ? searchInput.value : '';
   const preservedFandomValue = fandomFilter ? fandomFilter.value : '';
 
-  // Get pages to load from slider
   const pagesToLoad = getPagesToLoad();
 
-  showFicTrailLoading(`Loading ${pagesToLoad} ${pagesToLoad === 1 ? 'page' : 'pages'} of ${username}'s fic history...`);
+  // Check if we can use cached data
+  if (isCacheValid() && getMaxCachedPage() >= pagesToLoad) {
+    console.log(`Using cached data for ${pagesToLoad} pages`);
+    showFicTrailLoading('Loading from cache...');
+
+    // Combine cached pages up to the requested amount
+    const works = [];
+    for (let page = 1; page <= pagesToLoad; page++) {
+      if (pageCache.has(page)) {
+        works.push(...pageCache.get(page).works);
+      }
+    }
+
+    displayHistory(username, works, cachedTotalPages, pagesToLoad, preservedSearchValue, preservedFandomValue);
+
+    // Re-enable buttons
+    if (loadBtn) loadBtn.disabled = false;
+    if (retryBtn) retryBtn.disabled = false;
+    return;
+  }
 
   try {
-    const result = await fetchMultiplePages(username, pagesToLoad);
+    showFicTrailLoading(`Loading ${pagesToLoad} ${pagesToLoad === 1 ? 'page' : 'pages'} of ${username}'s fic history...`);
+    const result = await fetchMultiplePagesWithCache(username, pagesToLoad);
+
     if (result.works && result.works.length > 0) {
       displayHistory(username, result.works, result.totalPages, Math.min(pagesToLoad, result.totalPages), preservedSearchValue, preservedFandomValue);
     } else {
@@ -42,15 +62,13 @@ async function reloadHistory() {
     }
   } catch (error) {
     if (error.message === 'NOT_LOGGED_IN') {
-      showLoginError(ERROR_MESSAGES.LOGGED_OUT);
+      showLoginError();
       return;
     }
     console.error('Error loading history:', error);
     showFicTrailError(ERROR_MESSAGES.FETCH_FAILED);
   } finally {
     // Re-enable buttons after loading completes
-    const loadBtn = document.getElementById('fictrail-load-btn');
-    const retryBtn = document.getElementById('fictrail-retry-btn');
     if (loadBtn) loadBtn.disabled = false;
     if (retryBtn) retryBtn.disabled = false;
   }
@@ -61,15 +79,13 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
 
   allWorks = works;
   filteredWorks = [...works];
-
-  // Reset pagination when loading new history
   currentDisplayCount = ITEMS_PER_PAGE;
 
   const workCount = works.length;
   const uniqueAuthors = new Set(works.map(work => work.author)).size;
   const uniqueFandoms = new Set(works.flatMap(work => work.fandoms)).size;
 
-  // Update individual subtitle elements with proper plural/singular forms
+  // Update subtitle with cache status
   const worksCountEl = document.getElementById('fictrail-works-count');
   const fandomsCountEl = document.getElementById('fictrail-fandoms-count');
   const authorsCountEl = document.getElementById('fictrail-authors-count');
@@ -78,7 +94,7 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
   if (fandomsCountEl) fandomsCountEl.textContent = `${uniqueFandoms} ${uniqueFandoms === 1 ? 'fandom' : 'fandoms'}`;
   if (authorsCountEl) authorsCountEl.textContent = `${uniqueAuthors} ${uniqueAuthors === 1 ? 'author' : 'authors'}`;
 
-  // Update slider max value to match user's actual page count
+  // Update slider and pages info
   if (totalPages && totalPages > 0) {
     const slider = document.getElementById('fictrail-pages-slider');
     const sliderMax = document.querySelector('.fictrail-slider-max');
@@ -86,7 +102,6 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
     if (slider) slider.max = totalPages;
     if (sliderMax) sliderMax.textContent = totalPages;
 
-    // Set slider value to the actual pages loaded (for initial load) or keep current value (for reload)
     if (slider) {
       if (actualPagesLoaded !== undefined) {
         slider.value = actualPagesLoaded;
@@ -95,13 +110,15 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
       }
     }
 
-    // Update toggle text with page information
-    if (totalPages && totalPages > 0) {
-      updateToggleText(actualPagesLoaded, totalPages);
+    // Update toggle text with cache information
+    const cachedPageCount = getCachedPageCount();
+    const toggleText = document.getElementById('fictrail-toggle-text');
+    if (toggleText) {
+      toggleText.textContent = `History Pages Loaded (${actualPagesLoaded}/${totalPages})`;
     }
   }
 
-  // Show pages info with page selector and update button for reload functionality
+  // Show pages info and update button
   const pagesInfo = document.getElementById('fictrail-pages-info');
   const loadBtn = document.getElementById('fictrail-load-btn');
   if (pagesInfo) pagesInfo.style.display = 'block';
@@ -111,33 +128,28 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
   }
   updateReloadButtonText();
 
-  // Add favorite tags summary
   addFavoriteTagsSummary(works);
-
-  // Add search and display functionality
   populateFandomFilter(works);
 
-  // Restore preserved search and filter values
+  // Restore preserved values and apply search/filter
   const searchInput = document.getElementById('fictrail-search-input');
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
 
   if (searchInput && preservedSearchValue) {
     searchInput.value = preservedSearchValue;
   }
-
   if (fandomFilter && preservedFandomValue) {
     fandomFilter.value = preservedFandomValue;
   }
 
-  // Apply search and filter if values were preserved
   if (preservedSearchValue || preservedFandomValue) {
-    performSearch(); // This will also apply the filter
+    performSearch();
   } else {
     updateResultsCount(works.length);
     displayWorks(works);
   }
 
-  console.log(`Loaded ${works.length} works from ${actualPagesLoaded} pages`);
+  console.log(`Loaded ${works.length} works from ${actualPagesLoaded} pages (${getCachedPageCount()} pages cached)`);
 }
 
 // Initialize when page loads
@@ -153,3 +165,31 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// --- Cache management BEGIN ---
+
+const pageCache = new Map(); // Map of page numbers to {works: [], timestamp: number}
+let cachedTotalPages = null;
+let cacheTimestamp = null;
+
+function isCacheValid() {
+  return cacheTimestamp && (Date.now() - cacheTimestamp) < CACHE_EXPIRY_MS;
+}
+
+function clearCache() {
+  pageCache.clear();
+  cachedTotalPages = null;
+  cacheTimestamp = null;
+  console.log('Cache cleared');
+}
+
+function getCachedPageCount() {
+  return pageCache.size;
+}
+
+function getMaxCachedPage() {
+  if (pageCache.size === 0) return 0;
+  return Math.max(...pageCache.keys());
+}
+
+// --- Cache management END ---

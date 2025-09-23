@@ -166,41 +166,86 @@ function getTotalPages(doc = document) {
   return maxPage;
 }
 
-async function fetchMultiplePages(username, maxPagesToFetch = MAX_PAGES_FETCH) {
-  let totalPages;
-  let firstPageWorks = [];
+async function fetchMultiplePagesWithCache(username, maxPagesToFetch = MAX_PAGES_FETCH) {
+  let totalPages = cachedTotalPages;
+  const works = [];
 
-  try {
-    const firstPageUrl = `${AO3_BASE_URL}/users/${username}/readings?page=1`;
-    const response = await fetch(firstPageUrl);
-    const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    // Detect logged-out state on the first page fetch
-    if (isLoggedOutDoc(doc)) {
-      throw new Error('NOT_LOGGED_IN');
+  // Determine which pages we need to fetch
+  const cachedPages = getMaxCachedPage();
+  const startPage = isCacheValid() ? Math.max(1, cachedPages + 1) : 1;
+  const endPage = Math.min(maxPagesToFetch, totalPages || MAX_PAGES_FETCH);
+
+  // If we need to fetch page 1 or cache is invalid, start fresh
+  if (startPage === 1 || !isCacheValid()) {
+    console.log('Fetching fresh data starting from page 1');
+    clearCache();
+
+    try {
+      const firstPageUrl = `${AO3_BASE_URL}/users/${username}/readings?page=1`;
+      const response = await fetch(firstPageUrl);
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      if (isLoggedOutDoc(doc)) {
+        throw new Error('NOT_LOGGED_IN');
+      }
+
+      totalPages = getTotalPages(doc);
+      cachedTotalPages = totalPages;
+      cacheTimestamp = Date.now();
+
+      const firstPageWorks = scrapeHistoryFromPage(doc);
+      pageCache.set(1, { works: firstPageWorks, timestamp: Date.now() });
+      works.push(...firstPageWorks);
+
+      console.log(`Cached page 1 with ${firstPageWorks.length} works`);
+    } catch (error) {
+      console.error('Error fetching first page:', error);
+      if (error.message === 'NOT_LOGGED_IN') {
+        throw error;
+      }
+      return { works: [], totalPages: 1 };
     }
-    totalPages = getTotalPages(doc);
-    firstPageWorks = scrapeHistoryFromPage(doc);
-  } catch (error) {
-    console.error('Error fetching first page:', error);
-    if (error.message === 'NOT_LOGGED_IN') {
-      // Propagate to caller so UI can show proper login prompt
-      throw error;
+  } else {
+    // Use existing cached data
+    console.log(`Using cached data for pages 1-${cachedPages}`);
+    for (let page = 1; page <= Math.min(cachedPages, maxPagesToFetch); page++) {
+      if (pageCache.has(page)) {
+        works.push(...pageCache.get(page).works);
+      }
     }
-    return { works: [], totalPages: 1 };
   }
 
-  const pagesToFetch = Math.min(maxPagesToFetch, totalPages);
-  const works = [...firstPageWorks];
+  // Fetch additional pages if needed
+  const actualStartPage = Math.max(startPage, 2);
+  const pagesToFetch = Math.min(maxPagesToFetch, totalPages || MAX_PAGES_FETCH);
 
-  // Start from page 2 since we already have page 1
-  for (let page = 2; page <= pagesToFetch; page++) {
-    showFicTrailLoading(`Loading page ${page} of ${pagesToFetch}...`);
-    const pageWorks = await fetchHistoryPage(username, page);
-    works.push(...pageWorks);
-    await new Promise(resolve => setTimeout(resolve, PAGE_FETCH_DELAY));
+  if (actualStartPage <= pagesToFetch) {
+    console.log(`Fetching pages ${actualStartPage}-${pagesToFetch}`);
+
+    for (let page = actualStartPage; page <= pagesToFetch; page++) {
+      // Skip if we already have this page cached
+      if (pageCache.has(page)) {
+        console.log(`Page ${page} already cached, skipping`);
+        continue;
+      }
+
+      showFicTrailLoading(`Loading page ${page} of ${pagesToFetch}...`);
+      const pageWorks = await fetchHistoryPage(username, page);
+
+      if (pageWorks.length > 0) {
+        pageCache.set(page, { works: pageWorks, timestamp: Date.now() });
+        works.push(...pageWorks);
+        console.log(`Cached page ${page} with ${pageWorks.length} works`);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, PAGE_FETCH_DELAY));
+    }
   }
 
-  return { works: works, totalPages: totalPages };
+  console.log(`Total works loaded: ${works.length} from ${Math.min(maxPagesToFetch, totalPages || 1)} pages`);
+  console.log(`Cache now contains ${pageCache.size} pages`);
+
+  return { works: works, totalPages: totalPages || 1 };
 }
