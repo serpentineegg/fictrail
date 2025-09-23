@@ -271,7 +271,7 @@ function displayWorks(works, append = false) {
             
             <!--summary-->
             ${work.summary ? `<h6 class="landmark heading">Summary</h6>
-            <blockquote class="userstuff summary">
+            <blockquote class="userstuff summary fictrail-summary">
                 ${(() => {
       let summaryHTML = work.summary;
 
