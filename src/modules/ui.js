@@ -18,14 +18,27 @@ const Templates = {
   },
 
   workHeader(work) {
+    // Get current search query for highlighting
+    const searchInput = document.getElementById('fictrail-search-input');
+    const searchQuery = searchInput ? searchInput.value.trim() : '';
+
+    // Apply highlighting to title and author
+    const highlightedTitle = searchQuery ?
+      highlightSearchTerms(escapeHtml(work.title), searchQuery) :
+      escapeHtml(work.title);
+
+    const highlightedAuthor = searchQuery ?
+      highlightSearchTerms(escapeHtml(work.author), searchQuery) :
+      escapeHtml(work.author);
+
     return `
       <div class="header module">
         <h4 class="heading">
-          <a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a>
+          <a href="${work.url}" target="_blank" rel="noopener">${highlightedTitle}</a>
           by
           ${work.authorUrl
-      ? `<a rel="author" href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>`
-      : escapeHtml(work.author)
+      ? `<a rel="author" href="${work.authorUrl}" target="_blank" rel="noopener">${highlightedAuthor}</a>`
+      : highlightedAuthor
     }
         </h4>
         ${this.workFandoms(work)}
@@ -36,12 +49,20 @@ const Templates = {
   },
 
   workFandoms(work) {
+    // Get current search query for highlighting
+    const searchInput = document.getElementById('fictrail-search-input');
+    const searchQuery = searchInput ? searchInput.value.trim() : '';
+
     return `
       <h5 class="fandoms heading">
         <span class="landmark">Fandoms:</span>
-        ${work.fandoms.map(fandom =>
-      `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${escapeHtml(fandom)}</a>`
-    ).join(', ')}
+        ${work.fandoms.map(fandom => {
+      const highlightedFandom = searchQuery ?
+        highlightSearchTerms(escapeHtml(fandom), searchQuery) :
+        escapeHtml(fandom);
+
+      return `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${highlightedFandom}</a>`;
+    }).join(', ')}
         &nbsp;
       </h5>
     `;
