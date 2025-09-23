@@ -217,6 +217,34 @@
     }
 }
 
+/* List of works */
+#fictrail-works-list {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+#fictrail-works-list li.work {
+    margin: 0 0 1em;
+}
+
+/* Responsive grid layout for work blurbs on large screens */
+@media (min-width: 1800px) {
+    #fictrail-works-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5em;
+        align-items: stretch; /* Make containers equal height */
+    }
+
+    #fictrail-works-list li.work {
+        break-inside: avoid;
+    }
+
+    #fictrail-works-list li.work {
+        margin: 0;
+    }
+}
+
 /* Mobile responsive styles */
 @media (max-width: 768px) {
     /* Search form responsive */
