@@ -118,7 +118,6 @@ function createOverlay() {
 }
 
 function openFicTrail() {
-  // Create FicTrail if it doesn't exist
   if (!document.getElementById('fictrail-container')) {
     createOverlay();
   }
@@ -127,7 +126,6 @@ function openFicTrail() {
   const fictrailContainer = document.getElementById('fictrail-container');
 
   if (mainElement) {
-    // Hide all children of #main except FicTrail
     Array.from(mainElement.children).forEach(child => {
       if (child.id !== 'fictrail-container') {
         child.style.display = 'none';
@@ -137,15 +135,32 @@ function openFicTrail() {
 
   if (fictrailContainer) fictrailContainer.style.display = 'block';
 
-  // Only load data if we don't have any works yet
+  // Check if we have valid cached data
+  if (isCacheValid() && getCachedPageCount() > 0) {
+    console.log('Reopening FicTrail with cached data');
+    const works = [];
+    const maxCachedPage = getMaxCachedPage();
+
+    // Load all cached works
+    for (let page = 1; page <= maxCachedPage; page++) {
+      if (pageCache.has(page)) {
+        works.push(...pageCache.get(page).works);
+      }
+    }
+
+    if (works.length > 0) {
+      displayHistory(getUsername(), works, cachedTotalPages, maxCachedPage);
+      return;
+    }
+  }
+
+  // No valid cache or no works, load fresh data
   if (allWorks.length === 0) {
-    // Show loading state immediately
     showFicTrailLoading();
     setTimeout(() => {
       reloadHistory();
     }, 100);
   } else {
-    // Show existing results
     showFicTrailResults();
   }
 }
@@ -271,16 +286,16 @@ function displayWorks(works, append = false) {
             ${work.summary ? `<h6 class="landmark heading">Summary</h6>
             <blockquote class="userstuff summary fictrail-summary">
                 ${(() => {
-                let summaryHTML = work.summary;
+      let summaryHTML = work.summary;
 
-                // Get current search query and highlight matching text
-                const searchInput = document.getElementById('fictrail-search-input');
-                if (searchInput && searchInput.value.trim()) {
-                  summaryHTML = highlightSearchTerms(summaryHTML, searchInput.value.trim());
-                }
+      // Get current search query and highlight matching text
+      const searchInput = document.getElementById('fictrail-search-input');
+      if (searchInput && searchInput.value.trim()) {
+        summaryHTML = highlightSearchTerms(summaryHTML, searchInput.value.trim());
+      }
 
-                return summaryHTML;
-              })()}
+      return summaryHTML;
+    })()}
             </blockquote>` : ''}
 
             <!--series-->

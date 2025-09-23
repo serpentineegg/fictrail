@@ -4,6 +4,7 @@ const MAX_PAGES_FETCH = 100;
 const ITEMS_PER_PAGE = 20;
 const DEFAULT_PAGES_TO_LOAD = 2;
 const PAGE_FETCH_DELAY = 100;
+const CACHE_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 
 // Error Messages
 const ERROR_MESSAGES = {
