@@ -15,7 +15,7 @@ Built with flaming love for the AO3 community.
 
 2. **Install FicTrail**
    - **Option A:** [Install from Greasyfork](https://greasyfork.org/en/scripts/549726-fictrail-ao3-history-viewer) (recommended)
-   - **Option B:** [Direct download from GitHub](http://github.com/serpentineegg/fictrail/releases/latest/download/fictrail.user.js)
+   - **Option B:** [Direct download from GitHub](http://github.com/serpentineegg/fictrail/releases/latest/download/script.user.js)
    - Tampermonkey will automatically detect the userscript and prompt you to install it
 
 3. **Start Using FicTrail**
