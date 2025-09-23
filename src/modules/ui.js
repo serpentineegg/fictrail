@@ -271,21 +271,16 @@ function displayWorks(works, append = false) {
             ${work.summary ? `<h6 class="landmark heading">Summary</h6>
             <blockquote class="userstuff summary fictrail-summary">
                 ${(() => {
-      let summaryHTML = work.summary;
+                let summaryHTML = work.summary;
 
-      // Get current search query and highlight matching text
-      const searchInput = document.getElementById('fictrail-search-input');
-      if (searchInput && searchInput.value.trim()) {
-        const searchQuery = searchInput.value.trim();
-        const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        summaryHTML = summaryHTML.replace(
-          new RegExp(`(${escapedQuery})`, 'gi'),
-          '<span class="fictrail-highlight fictrail-highlight-text">$1</span>'
-        );
-      }
+                // Get current search query and highlight matching text
+                const searchInput = document.getElementById('fictrail-search-input');
+                if (searchInput && searchInput.value.trim()) {
+                  summaryHTML = highlightSearchTerms(summaryHTML, searchInput.value.trim());
+                }
 
-      return summaryHTML;
-    })()}
+                return summaryHTML;
+              })()}
             </blockquote>` : ''}
 
             <!--series-->
@@ -461,10 +456,18 @@ function generateTagsSection(work) {
     return '';
   }
 
+  const searchInput = document.getElementById('fictrail-search-input');
+  const searchQuery = searchInput ? searchInput.value.trim() : '';
+
   const tagItems = tagsToShow.map(tag => {
     const cssClass = getTagCssClass(tag.type);
     const encodedValue = encodeURIComponent(tag.value);
-    const escapedValue = escapeHtml(tag.value);
+    let escapedValue = escapeHtml(tag.value);
+
+    // Highlight search terms in tag text
+    if (searchQuery) {
+      escapedValue = highlightSearchTerms(escapedValue, searchQuery);
+    }
 
     return `<li class="${cssClass}"><a class="tag" href="/tags/${encodedValue}/works" target="_blank" rel="noopener">${escapedValue}</a></li>`;
   }).join(' ');
@@ -544,3 +547,35 @@ function updateToggleText(loadedPages, totalPages) {
     toggleText.textContent = `History Pages Loaded (${loadedPages}/${totalPages})`;
   }
 }
+
+function highlightSearchTerms(html, searchQuery) {
+  if (!searchQuery.trim()) return html;
+
+  // Create a temporary div to work with the HTML content
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+
+  // Function to highlight text in text nodes only
+  function highlightInTextNodes(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+
+      if (regex.test(text)) {
+        const highlightedText = text.replace(regex, '<mark class="fictrail-highlight">$1</mark>');
+        const wrapper = document.createElement('span');
+        wrapper.innerHTML = highlightedText;
+        node.parentNode.replaceChild(wrapper, node);
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      // Recursively process child nodes
+      const children = Array.from(node.childNodes);
+      children.forEach(child => highlightInTextNodes(child));
+    }
+  }
+
+  highlightInTextNodes(tempDiv);
+  return tempDiv.innerHTML;
+}
+
