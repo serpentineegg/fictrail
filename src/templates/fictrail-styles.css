@@ -121,12 +121,6 @@
     outline-offset: 1px;
 }
 
-/* Search result highlighting */
-.fictrail-highlight-text {
-    font-weight: bold !important;
-    text-decoration: underline !important;
-}
-
 /* Slider styling */
 .fictrail-slider-field {
     display: flex;
