@@ -1,44 +1,277 @@
 // UI Module - DOM creation and event handling
 
+// HTML Template Functions
+const Templates = {
+  workItem(work, index) {
+    return `
+      <li id="work_${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" 
+          class="reading work blurb group work-${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" 
+          role="article">
+        ${this.workHeader(work)}
+        ${this.workTags(work)}
+        ${this.workSummary(work)}
+        ${this.workSeries(work)}
+        ${this.workStats(work)}
+        ${this.workUserModule(work)}
+      </li>
+    `;
+  },
+
+  workHeader(work) {
+    return `
+      <div class="header module">
+        <h4 class="heading">
+          <a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a>
+          by
+          ${work.authorUrl
+      ? `<a rel="author" href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>`
+      : escapeHtml(work.author)
+    }
+        </h4>
+        ${this.workFandoms(work)}
+        ${this.workRequiredTags(work)}
+        ${work.publishDate ? `<p class="datetime">${escapeHtml(work.publishDate)}</p>` : ''}
+      </div>
+    `;
+  },
+
+  workFandoms(work) {
+    return `
+      <h5 class="fandoms heading">
+        <span class="landmark">Fandoms:</span>
+        ${work.fandoms.map(fandom =>
+      `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${escapeHtml(fandom)}</a>`
+    ).join(', ')}
+        &nbsp;
+      </h5>
+    `;
+  },
+
+  workRequiredTags(work) {
+    const tags = [];
+
+    if (work.rating && work.ratingClass) {
+      tags.push(this.requiredTag(work.rating, work.ratingClass));
+    }
+
+    if (work.warnings && work.warningClasses) {
+      work.warnings.forEach((warning, index) => {
+        tags.push(this.requiredTag(warning, work.warningClasses[index] || ''));
+      });
+    }
+
+    if (work.categories && work.categoryClasses) {
+      work.categories.forEach((category, index) => {
+        tags.push(this.requiredTag(category, work.categoryClasses[index] || ''));
+      });
+    }
+
+    if (work.status && work.statusClass) {
+      tags.push(this.requiredTag(work.status, work.statusClass));
+    }
+
+    return tags.length > 0 ? `<ul class="required-tags">${tags.join('')}</ul>` : '';
+  },
+
+  requiredTag(title, cssClass) {
+    return `
+      <li>
+        <a class="help symbol question modal modal-attached" 
+           title="Symbols key" 
+           href="/help/symbols-key.html" 
+           aria-controls="modal">
+          <span class="${cssClass}" title="${escapeHtml(title)}">
+            <span class="text">${escapeHtml(title)}</span>
+          </span>
+        </a>
+      </li>
+    `;
+  },
+
+  workTags(work) {
+    const tagsToShow = getTagsToDisplay(work);
+    if (tagsToShow.length === 0) return '';
+
+    return `
+      <h6 class="landmark heading">Tags</h6>
+      <ul class="tags commas">
+        ${tagsToShow.map(tag => this.tagItem(tag)).join(' ')}
+      </ul>
+    `;
+  },
+
+  tagItem(tag) {
+    const cssClass = getTagCssClass(tag.type);
+    const encodedValue = encodeURIComponent(tag.value);
+    let escapedValue = escapeHtml(tag.value);
+
+    // Highlight search terms if there's a search query
+    const searchInput = document.getElementById('fictrail-search-input');
+    const searchQuery = searchInput ? searchInput.value.trim() : '';
+    if (searchQuery) {
+      escapedValue = highlightSearchTerms(escapedValue, searchQuery);
+    }
+
+    return `
+      <li class="${cssClass}">
+        <a class="tag" 
+           href="/tags/${encodedValue}/works" 
+           target="_blank" 
+           rel="noopener">${escapedValue}</a>
+      </li>
+    `;
+  },
+
+  workSummary(work) {
+    if (!work.summary) return '';
+
+    let summaryHTML = work.summary;
+    const searchInput = document.getElementById('fictrail-search-input');
+    if (searchInput && searchInput.value.trim()) {
+      summaryHTML = highlightSearchTerms(summaryHTML, searchInput.value.trim());
+    }
+
+    return `
+      <h6 class="landmark heading">Summary</h6>
+      <blockquote class="userstuff summary fictrail-summary">
+        ${summaryHTML}
+      </blockquote>
+    `;
+  },
+
+  workSeries(work) {
+    if (!work.series || work.series.length === 0) return '';
+
+    return `
+      <h6 class="landmark heading">Series</h6>
+      <ul class="series">
+        ${work.series.map(series => `
+          <li>
+            Part <strong>${series.part}</strong> of 
+            <a href="${series.url}" target="_blank" rel="noopener">${escapeHtml(series.title)}</a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+  },
+
+  workStats(work) {
+    const stats = work.stats || {};
+    const hasStats = Object.values(stats).some(value => value && value.trim());
+    if (!hasStats) return '';
+
+    const statItems = [];
+    const statFields = [
+      { key: 'language', label: 'Language' },
+      { key: 'words', label: 'Words' },
+      { key: 'chapters', label: 'Chapters' },
+      { key: 'collections', label: 'Collections' },
+      { key: 'comments', label: 'Comments' },
+      { key: 'kudos', label: 'Kudos' },
+      { key: 'bookmarks', label: 'Bookmarks' },
+      { key: 'hits', label: 'Hits' }
+    ];
+
+    statFields.forEach(field => {
+      if (stats[field.key]) {
+        statItems.push(`
+          <dt class="${field.key.toLowerCase()}">${field.label}:</dt>
+          <dd class="${field.key.toLowerCase()}" ${field.key === 'language' ? 'lang="en"' : ''}>
+            ${escapeHtml(stats[field.key])}
+          </dd>
+        `);
+      }
+    });
+
+    return statItems.length > 0 ? `<dl class="stats">${statItems.join('')}</dl>` : '';
+  },
+
+  workUserModule(work) {
+    return `
+      <div class="user module group">
+        <h4 class="viewed heading">
+          <span>Last visited:</span> ${work.lastVisited || 'Unknown'}
+        </h4>
+      </div>
+    `;
+  },
+
+  loadMoreSection(works, currentCount) {
+    const remainingCount = works.length - currentCount;
+    const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
+
+    return {
+      message: `<p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>`,
+      buttonText: `Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}`
+    };
+  },
+
+  favoriteTagsSummary(tag) {
+    return `So you've been really into ${escapeHtml(tag)} lately. Love it for you.`;
+  }
+};
+
+// DOM Element Creation Functions
+const DOMHelpers = {
+  createElement(tag, attributes = {}, textContent = '') {
+    const element = document.createElement(tag);
+
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (key === 'style' && typeof value === 'object') {
+        Object.assign(element.style, value);
+      } else {
+        element.setAttribute(key, value);
+      }
+    });
+
+    if (textContent) {
+      element.textContent = textContent;
+    }
+
+    return element;
+  },
+
+  createButton(id, text, clickHandler, keydownHandler = null) {
+    const button = this.createElement('a', {
+      id,
+      style: { cursor: 'pointer' },
+      tabIndex: 0
+    }, text);
+
+    button.addEventListener('click', clickHandler);
+
+    if (keydownHandler) {
+      button.addEventListener('keydown', keydownHandler);
+    } else {
+      button.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          clickHandler();
+        }
+      });
+    }
+
+    return button;
+  }
+};
+
 // Create FicTrail button - try history page placement first
 function createFicTrailButton() {
   // Only add to history page if we're on the readings page
   if (window.location.pathname.includes('/readings')) {
-    addToHistoryPage()
+    addToHistoryPage();
   }
 }
 
 // Add FicTrail button in front of "Full History" in subnav
 function addToHistoryPage() {
   const subNav = document.querySelector('ul.navigation.actions[role="navigation"]');
+  if (!subNav) return false;
 
-  if (!subNav) {
-    return false; // Subnav not found
-  }
-
-  // Create list item for the button
-  const listItem = document.createElement('li');
-
-  // Create the button using AO3's button styles
-  const button = document.createElement('a');
-  button.id = 'fictrail-history-btn';
-  button.textContent = 'FicTrail';
-  button.style.cursor = 'pointer';
-  button.tabIndex = 0;
-
-  button.addEventListener('click', openFicTrail);
-
-  // Add keyboard support
-  button.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openFicTrail();
-    }
-  });
+  const listItem = DOMHelpers.createElement('li');
+  const button = DOMHelpers.createButton('fictrail-history-btn', 'FicTrail', openFicTrail);
 
   listItem.appendChild(button);
-
-  // Insert at the beginning of the subnav
   subNav.insertBefore(listItem, subNav.firstChild);
 
   return true;
@@ -47,9 +280,7 @@ function addToHistoryPage() {
 // Create FicTrail content inside #main
 function createOverlay() {
   // Check if overlay already exists
-  if (document.getElementById('fictrail-container')) {
-    return;
-  }
+  if (document.getElementById('fictrail-container')) return;
 
   const mainElement = document.getElementById('main');
   if (!mainElement) {
@@ -58,63 +289,56 @@ function createOverlay() {
   }
 
   // Create FicTrail container
-  const fictrailDiv = document.createElement('div');
-  fictrailDiv.id = 'fictrail-container';
+  const fictrailDiv = DOMHelpers.createElement('div', {
+    id: 'fictrail-container'
+  });
+
   // HTML template will be injected here during build
   fictrailDiv.innerHTML = '<!-- This will be replaced by build script -->';
 
   // Insert FicTrail inside #main
   mainElement.appendChild(fictrailDiv);
 
-  // Set default slider value to DEFAULT_PAGES_TO_LOAD after creating the overlay
+  // Set default slider value after creating the overlay
   setTimeout(() => {
     const slider = document.getElementById('fictrail-pages-slider');
     if (slider) {
       slider.value = DEFAULT_PAGES_TO_LOAD;
-      // Update any display elements that show the current value
       updateReloadButtonText();
     }
   }, 0);
 
-  // Add event listeners with error checking
-  const loadBtn = document.getElementById('fictrail-load-btn');
-  const retryBtn = document.getElementById('fictrail-retry-btn');
-  const searchInput = document.getElementById('fictrail-search-input');
-  const fandomFilter = document.getElementById('fictrail-fandom-filter');
-  const pagesSlider = document.getElementById('fictrail-pages-slider');
+  // Add event listeners
+  attachEventListeners();
+}
 
-  if (loadBtn) {
-    loadBtn.addEventListener('click', reloadHistory);
-    loadBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        reloadHistory();
-      }
-    });
-  }
-  if (retryBtn) {
-    retryBtn.addEventListener('click', reloadHistory);
-    retryBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        reloadHistory();
-      }
-    });
-  }
-  if (searchInput) searchInput.addEventListener('input', debounce(performSearch, 300));
-  if (fandomFilter) fandomFilter.addEventListener('change', applyFilter);
-  if (pagesSlider) pagesSlider.addEventListener('input', updatePagesValue);
+// Centralized event listener attachment
+function attachEventListeners() {
+  const eventMap = [
+    { id: 'fictrail-load-btn', event: 'click', handler: reloadHistory },
+    { id: 'fictrail-retry-btn', event: 'click', handler: reloadHistory },
+    { id: 'fictrail-search-input', event: 'input', handler: debounce(performSearch, 300) },
+    { id: 'fictrail-fandom-filter', event: 'change', handler: applyFilter },
+    { id: 'fictrail-pages-slider', event: 'input', handler: updatePagesValue },
+    { id: 'fictrail-pages-toggle', event: 'click', handler: togglePagesSection }
+  ];
 
-  const pagesToggle = document.getElementById('fictrail-pages-toggle');
-  if (pagesToggle) {
-    pagesToggle.addEventListener('click', togglePagesSection);
-    pagesToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        togglePagesSection();
+  eventMap.forEach(({ id, event, handler }) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener(event, handler);
+
+      // Add keyboard support for clickable elements
+      if (event === 'click') {
+        element.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handler();
+          }
+        });
       }
-    });
-  }
+    }
+  });
 }
 
 function openFicTrail() {
@@ -224,7 +448,6 @@ function getPagesToLoad() {
   return parseInt(slider.value);
 }
 
-
 function displayWorks(works, append = false) {
   const worksListContainer = document.getElementById('fictrail-works-container');
   const worksList = document.getElementById('fictrail-works-list');
@@ -248,99 +471,9 @@ function displayWorks(works, append = false) {
   const worksToShow = works.slice(0, currentDisplayCount);
   const hasMoreResults = works.length > currentDisplayCount;
 
-  // Calculate starting index for work numbers
-  const startIndex = append ? worksList.children.length : 0;
-
-  const worksHTML = worksToShow
-    .slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0)
-    .map((work, index) => `
-        <li id="work_${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" class="reading work blurb group work-${work.url.match(/\/works\/(\d+)/)?.[1] || 'unknown'}" role="article">
-            <!--title, author, fandom-->
-            <div class="header module">
-                <h4 class="heading">
-                    <a href="${work.url}" target="_blank" rel="noopener">${escapeHtml(work.title)}</a>
-                    by
-                    ${work.authorUrl ? `<a rel="author" href="${work.authorUrl}" target="_blank" rel="noopener">${escapeHtml(work.author)}</a>` : escapeHtml(work.author)}
-                </h4>
-
-                <h5 class="fandoms heading">
-                    <span class="landmark">Fandoms:</span>
-                    ${work.fandoms.map(fandom => `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${escapeHtml(fandom)}</a>`).join(', ')}
-                    &nbsp;
-                </h5>
-
-                <!--required tags-->
-                <ul class="required-tags">
-                    ${work.rating && work.ratingClass ? `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.ratingClass}" title="${escapeHtml(work.rating)}"><span class="text">${escapeHtml(work.rating)}</span></span></a></li>` : ''}
-                    ${work.warnings && work.warningClasses ? work.warnings.map((warning, index) => `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.warningClasses[index] || ''}" title="${escapeHtml(warning)}"><span class="text">${escapeHtml(warning)}</span></span></a></li>`).join('') : ''}
-                    ${work.categories && work.categoryClasses ? work.categories.map((category, index) => `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.categoryClasses[index] || ''}" title="${escapeHtml(category)}"><span class="text">${escapeHtml(category)}</span></span></a></li>`).join('') : ''}
-                    ${work.status && work.statusClass ? `<li><a class="help symbol question modal modal-attached" title="Symbols key" href="/help/symbols-key.html" aria-controls="modal"><span class="${work.statusClass}" title="${escapeHtml(work.status)}"><span class="text">${escapeHtml(work.status)}</span></span></a></li>` : ''}
-                </ul>
-                ${work.publishDate ? `<p class="datetime">${escapeHtml(work.publishDate)}</p>` : ''}
-            </div>
-
-            <!--warnings and other tags-->
-            ${generateTagsSection(work)}
-            
-            <!--summary-->
-            ${work.summary ? `<h6 class="landmark heading">Summary</h6>
-            <blockquote class="userstuff summary fictrail-summary">
-                ${(() => {
-      let summaryHTML = work.summary;
-
-      // Get current search query and highlight matching text
-      const searchInput = document.getElementById('fictrail-search-input');
-      if (searchInput && searchInput.value.trim()) {
-        summaryHTML = highlightSearchTerms(summaryHTML, searchInput.value.trim());
-      }
-
-      return summaryHTML;
-    })()}
-            </blockquote>` : ''}
-
-            <!--series-->
-            ${work.series && work.series.length > 0 ? `<h6 class="landmark heading">Series</h6>
-            <ul class="series">
-                ${work.series.map(series => `<li>
-                    Part <strong>${series.part}</strong> of <a href="${series.url}" target="_blank" rel="noopener">${escapeHtml(series.title)}</a>
-                </li>`).join('')}
-            </ul>` : ''}
-
-            <!--stats-->
-            ${(() => {
-      const stats = work.stats || {};
-      const hasStats = Object.values(stats).some(value => value && value.trim());
-
-      if (!hasStats) return '';
-
-      return `<dl class="stats">
-                    ${stats.language ? `<dt class="language">Language:</dt>
-                    <dd class="language" lang="en">${escapeHtml(stats.language)}</dd>` : ''}
-                    ${stats.words ? `<dt class="words">Words:</dt>
-                    <dd class="words">${escapeHtml(stats.words)}</dd>` : ''}
-                    ${stats.chapters ? `<dt class="chapters">Chapters:</dt>
-                    <dd class="chapters">${escapeHtml(stats.chapters)}</dd>` : ''}
-                    ${stats.collections ? `<dt class="collections">Collections:</dt>
-                    <dd class="collections">${escapeHtml(stats.collections)}</dd>` : ''}
-                    ${stats.comments ? `<dt class="comments">Comments:</dt>
-                    <dd class="comments">${escapeHtml(stats.comments)}</dd>` : ''}
-                    ${stats.kudos ? `<dt class="kudos">Kudos:</dt>
-                    <dd class="kudos">${escapeHtml(stats.kudos)}</dd>` : ''}
-                    ${stats.bookmarks ? `<dt class="bookmarks">Bookmarks:</dt>
-                    <dd class="bookmarks">${escapeHtml(stats.bookmarks)}</dd>` : ''}
-                    ${stats.hits ? `<dt class="hits">Hits:</dt>
-                    <dd class="hits">${escapeHtml(stats.hits)}</dd>` : ''}
-                </dl>`;
-    })()}
-
-            <div class="user module group">
-                <h4 class="viewed heading">
-                    <span>Last visited:</span> ${work.lastVisited || 'Unknown'}
-                </h4>
-            </div>
-        </li>
-    `)
-    .join('');
+  // Generate HTML for works to display
+  const worksToRender = worksToShow.slice(append ? currentDisplayCount - ITEMS_PER_PAGE : 0);
+  const worksHTML = worksToRender.map((work, index) => Templates.workItem(work, index)).join('');
 
   if (append) {
     worksList.insertAdjacentHTML('beforeend', worksHTML);
@@ -370,29 +503,18 @@ function addFavoriteTagsSummary(works) {
   const tagCounts = {};
 
   recentWorks.forEach(work => {
-    // Count relationships
-    if (work.relationships) {
-      work.relationships.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      });
-    }
-    // Count characters
-    if (work.characters) {
-      work.characters.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      });
-    }
-    // Count freeforms
-    if (work.freeforms) {
-      work.freeforms.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-      });
-    }
+    // Count relationships, characters, and freeforms
+    ['relationships', 'characters', 'freeforms'].forEach(tagType => {
+      if (work[tagType]) {
+        work[tagType].forEach(tag => {
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        });
+      }
+    });
   });
 
   // Sort tags by frequency and get the most popular one
-  const sortedTags = Object.entries(tagCounts)
-    .sort((a, b) => b[1] - a[1]);
+  const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
 
   if (sortedTags.length > 0) {
     // Remove existing summary if it exists
@@ -401,17 +523,18 @@ function addFavoriteTagsSummary(works) {
       existingSummary.remove();
     }
 
-    // Get the most popular tag
+    // Get the most popular tag and create summary element
     const [mostPopularTag] = sortedTags[0];
-
-    // Create summary element using AO3 structure
-    const summaryDiv = document.createElement('p');
-    summaryDiv.id = 'fictrail-favorite-tags-summary';
-    summaryDiv.innerHTML = `So you've been really into ${escapeHtml(mostPopularTag)} lately. Love it for you.`;
+    const summaryDiv = DOMHelpers.createElement('p', {
+      id: 'fictrail-favorite-tags-summary'
+    });
+    summaryDiv.innerHTML = Templates.favoriteTagsSummary(mostPopularTag);
 
     // Insert in the designated container
     const summaryContainer = document.getElementById('fictrail-favorite-tags-summary-container');
-    summaryContainer.appendChild(summaryDiv);
+    if (summaryContainer) {
+      summaryContainer.appendChild(summaryDiv);
+    }
   }
 }
 
@@ -459,42 +582,6 @@ function getTagCssClass(tagType) {
   return classMap[tagType] || '';
 }
 
-/**
- * Generates HTML for the tags section
- * @param {Object} work - The work object
- * @returns {string} HTML string for the tags section
- */
-function generateTagsSection(work) {
-  const tagsToShow = getTagsToDisplay(work);
-
-  if (tagsToShow.length === 0) {
-    return '';
-  }
-
-  const searchInput = document.getElementById('fictrail-search-input');
-  const searchQuery = searchInput ? searchInput.value.trim() : '';
-
-  const tagItems = tagsToShow.map(tag => {
-    const cssClass = getTagCssClass(tag.type);
-    const encodedValue = encodeURIComponent(tag.value);
-    let escapedValue = escapeHtml(tag.value);
-
-    // Highlight search terms in tag text
-    if (searchQuery) {
-      escapedValue = highlightSearchTerms(escapedValue, searchQuery);
-    }
-
-    return `<li class="${cssClass}"><a class="tag" href="/tags/${encodedValue}/works" target="_blank" rel="noopener">${escapedValue}</a></li>`;
-  }).join(' ');
-
-  return `
-    <h6 class="landmark heading">Tags</h6>
-    <ul class="tags commas">
-      ${tagItems}
-    </ul>
-  `;
-}
-
 function showLoadMoreButton(works, currentCount) {
   const loadMoreContainer = document.getElementById('fictrail-load-more-container');
   const loadMoreMessage = document.getElementById('fictrail-load-more-message');
@@ -502,16 +589,11 @@ function showLoadMoreButton(works, currentCount) {
 
   if (!loadMoreContainer || !loadMoreMessage || !loadMoreButton) return;
 
-  const remainingCount = works.length - currentCount;
-  const nextBatchSize = Math.min(ITEMS_PER_PAGE, remainingCount);
+  const loadMoreContent = Templates.loadMoreSection(works, currentCount);
 
-  // Update message
-  loadMoreMessage.innerHTML = `
-    <p>Showing ${currentCount} of ${works.length} ${works.length === 1 ? 'result' : 'results'}</p>
-  `;
-
-  // Update button text
-  loadMoreButton.textContent = `Load ${nextBatchSize} More ${nextBatchSize === 1 ? 'Result' : 'Results'}`;
+  // Update message and button
+  loadMoreMessage.innerHTML = loadMoreContent.message;
+  loadMoreButton.textContent = loadMoreContent.buttonText;
 
   // Show the container
   loadMoreContainer.style.display = 'block';
@@ -593,4 +675,3 @@ function highlightSearchTerms(html, searchQuery) {
   highlightInTextNodes(tempDiv);
   return tempDiv.innerHTML;
 }
-
