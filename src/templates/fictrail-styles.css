@@ -258,6 +258,10 @@
     opacity: 1;
 }
 
+.fictrail-bottom-actions {
+    margin-top: 1em;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .fictrail-search-row {
