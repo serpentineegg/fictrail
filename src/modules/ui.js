@@ -162,14 +162,14 @@ const Templates = {
 
     const statItems = [];
     const statFields = [
-      {key: 'language', label: 'Language'},
-      {key: 'words', label: 'Words'},
-      {key: 'chapters', label: 'Chapters'},
-      {key: 'collections', label: 'Collections'},
-      {key: 'comments', label: 'Comments'},
-      {key: 'kudos', label: 'Kudos'},
-      {key: 'bookmarks', label: 'Bookmarks'},
-      {key: 'hits', label: 'Hits'}
+      { key: 'language', label: 'Language' },
+      { key: 'words', label: 'Words' },
+      { key: 'chapters', label: 'Chapters' },
+      { key: 'collections', label: 'Collections' },
+      { key: 'comments', label: 'Comments' },
+      { key: 'kudos', label: 'Kudos' },
+      { key: 'bookmarks', label: 'Bookmarks' },
+      { key: 'hits', label: 'Hits' }
     ];
 
     statFields.forEach(field => {
@@ -234,7 +234,7 @@ const DOMHelpers = {
   createButton(id, text, clickHandler, keydownHandler = null) {
     const button = this.createElement('a', {
       id,
-      style: {cursor: 'pointer'},
+      style: { cursor: 'pointer' },
       tabIndex: 0
     }, text);
 
@@ -560,7 +560,7 @@ function getTagsToDisplay(work) {
   const hasSearchQuery = searchInput && searchInput.value.trim();
 
   // Always include warnings
-  const warningTags = (work.warnings || []).map(tag => ({type: 'warning', value: tag}));
+  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
 
   if (hasSearchQuery) {
     // Show warnings plus matching tags during search
@@ -572,9 +572,9 @@ function getTagsToDisplay(work) {
     // Show all tags when no search query
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => ({type: 'relationship', value: tag})),
-      ...(work.characters || []).map(tag => ({type: 'character', value: tag})),
-      ...(work.freeforms || []).map(tag => ({type: 'freeform', value: tag}))
+      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
+      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
+      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
     ];
   }
 }
