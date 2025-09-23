@@ -114,7 +114,7 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
     const cachedPageCount = getCachedPageCount();
     const toggleText = document.getElementById('fictrail-toggle-text');
     if (toggleText) {
-      toggleText.textContent = `History Pages Loaded (${actualPagesLoaded}/${totalPages})`;
+      toggleText.textContent = `${actualPagesLoaded}/${totalPages} History Pages Loaded`;
     }
   }
 
