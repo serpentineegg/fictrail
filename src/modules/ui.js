@@ -266,58 +266,28 @@ function displayWorks(works, append = false) {
                 ${work.publishDate ? `<p class="datetime">${escapeHtml(work.publishDate)}</p>` : ''}
             </div>
 
-            <!--warnings again, cast, freeform tags-->
-            ${(() => {
-                // Always show all tags, but highlight matching ones
-                const allTags = [
-                    ...(work.warnings || []).map(tag => ({ type: 'warning', value: tag })),
-                    ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
-                    ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
-                    ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
-                ];
-
-                if (allTags.length === 0) return '';
-
-                // Create a set of matching tag values for quick lookup
-                const matchingTagValues = new Set((work.matchingTags || []).map(tag => tag.value));
-
-                return `<h6 class="landmark heading">Tags</h6>
-                <ul class="tags commas">
-                    ${allTags.map(tag => {
-                        let className = '';
-                        if (tag.type === 'relationship') className = 'relationships';
-                        else if (tag.type === 'character') className = 'characters';
-                        else if (tag.type === 'freeform') className = 'freeforms';
-                        else if (tag.type === 'warning') className = 'warnings';
-
-                        // Add highlight class if this tag matches the search
-                        const isMatching = matchingTagValues.has(tag.value);
-                        const tagClass = isMatching ? 'tag fictrail-highlight' : 'tag';
-
-                        return `<li class="${className}"><a class="${tagClass}" href="/tags/${encodeURIComponent(tag.value)}/works" target="_blank" rel="noopener">${escapeHtml(tag.value)}</a></li>`;
-                    }).join(' ')}
-                </ul>`;
-            })()}
-
+            <!--warnings and other tags-->
+            ${generateTagsSection(work)}
+            
             <!--summary-->
             ${work.summary ? `<h6 class="landmark heading">Summary</h6>
-            <blockquote class="userstuff summary">
+            <blockquote class="userstuff summary fictrail-summary">
                 ${(() => {
-                    let summaryHTML = work.summary;
+      let summaryHTML = work.summary;
 
-                    // Get current search query and highlight matching text
-                    const searchInput = document.getElementById('fictrail-search-input');
-                    if (searchInput && searchInput.value.trim()) {
-                        const searchQuery = searchInput.value.trim();
-                        const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        summaryHTML = summaryHTML.replace(
-                            new RegExp(`(${escapedQuery})`, 'gi'),
-                            '<span class="fictrail-highlight fictrail-highlight-text">$1</span>'
-                        );
-                    }
+      // Get current search query and highlight matching text
+      const searchInput = document.getElementById('fictrail-search-input');
+      if (searchInput && searchInput.value.trim()) {
+        const searchQuery = searchInput.value.trim();
+        const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        summaryHTML = summaryHTML.replace(
+          new RegExp(`(${escapedQuery})`, 'gi'),
+          '<span class="fictrail-highlight fictrail-highlight-text">$1</span>'
+        );
+      }
 
-                    return summaryHTML;
-                })()}
+      return summaryHTML;
+    })()}
             </blockquote>` : ''}
 
             <!--series-->
@@ -330,12 +300,12 @@ function displayWorks(works, append = false) {
 
             <!--stats-->
             ${(() => {
-                const stats = work.stats || {};
-                const hasStats = Object.values(stats).some(value => value && value.trim());
+      const stats = work.stats || {};
+      const hasStats = Object.values(stats).some(value => value && value.trim());
 
-                if (!hasStats) return '';
+      if (!hasStats) return '';
 
-                return `<dl class="stats">
+      return `<dl class="stats">
                     ${stats.language ? `<dt class="language">Language:</dt>
                     <dd class="language" lang="en">${escapeHtml(stats.language)}</dd>` : ''}
                     ${stats.words ? `<dt class="words">Words:</dt>
@@ -353,7 +323,7 @@ function displayWorks(works, append = false) {
                     ${stats.hits ? `<dt class="hits">Hits:</dt>
                     <dd class="hits">${escapeHtml(stats.hits)}</dd>` : ''}
                 </dl>`;
-            })()}
+    })()}
 
             <div class="user module group">
                 <h4 class="viewed heading">
@@ -485,4 +455,76 @@ function addFavoriteTagsSummary(works) {
     const summaryContainer = document.getElementById('fictrail-favorite-tags-summary-container');
     summaryContainer.appendChild(summaryDiv);
   }
+}
+
+/**
+ * Determines which tags to display based on search state
+ * @param {Object} work - The work object
+ * @returns {Array} Array of tag objects with type and value
+ */
+function getTagsToDisplay(work) {
+  const searchInput = document.getElementById('fictrail-search-input');
+  const hasSearchQuery = searchInput && searchInput.value.trim();
+
+  // Always include warnings
+  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
+
+  if (hasSearchQuery) {
+    // Show warnings plus matching tags during search
+    const matchingTags = work.matchingTags || [];
+    // Filter out warnings from matchingTags to avoid duplicates
+    const nonWarningMatchingTags = matchingTags.filter(tag => tag.type !== 'warning');
+    return [...warningTags, ...nonWarningMatchingTags];
+  } else {
+    // Show all tags when no search query
+    return [
+      ...warningTags,
+      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
+      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
+      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
+    ];
+  }
+}
+
+/**
+ * Gets the CSS class name for a tag type
+ * @param {string} tagType - The type of tag (warning, relationship, character, freeform)
+ * @returns {string} The CSS class name
+ */
+function getTagCssClass(tagType) {
+  const classMap = {
+    'relationship': 'relationships',
+    'character': 'characters',
+    'freeform': 'freeforms',
+    'warning': 'warnings'
+  };
+  return classMap[tagType] || '';
+}
+
+/**
+ * Generates HTML for the tags section
+ * @param {Object} work - The work object
+ * @returns {string} HTML string for the tags section
+ */
+function generateTagsSection(work) {
+  const tagsToShow = getTagsToDisplay(work);
+
+  if (tagsToShow.length === 0) {
+    return '';
+  }
+
+  const tagItems = tagsToShow.map(tag => {
+    const cssClass = getTagCssClass(tag.type);
+    const encodedValue = encodeURIComponent(tag.value);
+    const escapedValue = escapeHtml(tag.value);
+
+    return `<li class="${cssClass}"><a class="tag" href="/tags/${encodedValue}/works" target="_blank" rel="noopener">${escapedValue}</a></li>`;
+  }).join(' ');
+
+  return `
+    <h6 class="landmark heading">Tags</h6>
+    <ul class="tags commas">
+      ${tagItems}
+    </ul>
+  `;
 }
