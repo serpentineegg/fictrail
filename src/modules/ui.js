@@ -162,14 +162,14 @@ const Templates = {
 
     const statItems = [];
     const statFields = [
-      { key: 'language', label: 'Language' },
-      { key: 'words', label: 'Words' },
-      { key: 'chapters', label: 'Chapters' },
-      { key: 'collections', label: 'Collections' },
-      { key: 'comments', label: 'Comments' },
-      { key: 'kudos', label: 'Kudos' },
-      { key: 'bookmarks', label: 'Bookmarks' },
-      { key: 'hits', label: 'Hits' }
+      {key: 'language', label: 'Language'},
+      {key: 'words', label: 'Words'},
+      {key: 'chapters', label: 'Chapters'},
+      {key: 'collections', label: 'Collections'},
+      {key: 'comments', label: 'Comments'},
+      {key: 'kudos', label: 'Kudos'},
+      {key: 'bookmarks', label: 'Bookmarks'},
+      {key: 'hits', label: 'Hits'}
     ];
 
     statFields.forEach(field => {
@@ -234,7 +234,7 @@ const DOMHelpers = {
   createButton(id, text, clickHandler, keydownHandler = null) {
     const button = this.createElement('a', {
       id,
-      style: { cursor: 'pointer' },
+      style: {cursor: 'pointer'},
       tabIndex: 0
     }, text);
 
@@ -315,15 +315,15 @@ function createOverlay() {
 // Centralized event listener attachment
 function attachEventListeners() {
   const eventMap = [
-    { id: 'fictrail-load-btn', event: 'click', handler: reloadHistory },
-    { id: 'fictrail-retry-btn', event: 'click', handler: reloadHistory },
-    { id: 'fictrail-search-input', event: 'input', handler: debounce(performSearch, 300) },
-    { id: 'fictrail-fandom-filter', event: 'change', handler: applyFilter },
-    { id: 'fictrail-pages-slider', event: 'input', handler: updatePagesValue },
-    { id: 'fictrail-pages-toggle', event: 'click', handler: togglePagesSection }
+    {id: 'fictrail-load-btn', event: 'click', handler: reloadHistory},
+    {id: 'fictrail-retry-btn', event: 'click', handler: reloadHistory},
+    {id: 'fictrail-search-input', event: 'input', handler: debounce(performSearch, 300)},
+    {id: 'fictrail-fandom-filter', event: 'change', handler: applyFilter},
+    {id: 'fictrail-pages-slider', event: 'input', handler: updatePagesValue},
+    {id: 'fictrail-pages-toggle', event: 'click', handler: togglePagesSection}
   ];
 
-  eventMap.forEach(({ id, event, handler }) => {
+  eventMap.forEach(({id, event, handler}) => {
     const element = document.getElementById(id);
     if (element) {
       element.addEventListener(event, handler);
@@ -548,7 +548,7 @@ function getTagsToDisplay(work) {
   const hasSearchQuery = searchInput && searchInput.value.trim();
 
   // Always include warnings
-  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
+  const warningTags = (work.warnings || []).map(tag => ({type: 'warning', value: tag}));
 
   if (hasSearchQuery) {
     // Show warnings plus matching tags during search
@@ -560,9 +560,9 @@ function getTagsToDisplay(work) {
     // Show all tags when no search query
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
-      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
-      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
+      ...(work.relationships || []).map(tag => ({type: 'relationship', value: tag})),
+      ...(work.characters || []).map(tag => ({type: 'character', value: tag})),
+      ...(work.freeforms || []).map(tag => ({type: 'freeform', value: tag}))
     ];
   }
 }
@@ -638,13 +638,6 @@ function togglePagesSection() {
   }
 }
 
-function updateToggleText(loadedPages, totalPages) {
-  const toggleText = document.getElementById('fictrail-toggle-text');
-  if (toggleText && loadedPages && totalPages) {
-    toggleText.textContent = `History Pages Loaded (${loadedPages}/${totalPages})`;
-  }
-}
-
 function highlightSearchTerms(html, searchQuery) {
   if (!searchQuery.trim()) return html;
 
@@ -661,12 +654,22 @@ function highlightSearchTerms(html, searchQuery) {
 
       if (regex.test(text)) {
         const highlightedText = text.replace(regex, '<mark class="fictrail-highlight">$1</mark>');
-        const wrapper = document.createElement('span');
-        wrapper.innerHTML = highlightedText;
-        node.parentNode.replaceChild(wrapper, node);
+
+        // Create a document fragment to avoid extra wrapper spans
+        const fragment = document.createDocumentFragment();
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = highlightedText;
+
+        // Move all child nodes from temp container to fragment
+        while (tempContainer.firstChild) {
+          fragment.appendChild(tempContainer.firstChild);
+        }
+
+        // Replace the text node with the fragment contents
+        node.parentNode.replaceChild(fragment, node);
       }
     } else if (node.nodeType === Node.ELEMENT_NODE) {
-      // Recursively process child nodes
+      // Recursively process child nodes (need to convert to array first since we're modifying)
       const children = Array.from(node.childNodes);
       children.forEach(child => highlightInTextNodes(child));
     }
