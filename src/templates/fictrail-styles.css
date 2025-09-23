@@ -126,15 +126,6 @@
 }
 
 /* Search result highlighting */
-.tag.fictrail-highlight {
-    font-weight: bold !important;
-    filter: brightness(1.4) saturate(1.3) !important;
-}
-
-.tag.fictrail-highlight:hover {
-    filter: brightness(1.4) saturate(1.3) !important;
-}
-
 .fictrail-highlight-text {
     font-weight: bold !important;
     text-decoration: underline !important;
