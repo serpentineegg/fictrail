@@ -1,3 +1,23 @@
+/* Subtitle styling */
+#fictrail-subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+#fictrail-subtitle span:not(:first-child)::before {
+    content: " • ";
+    margin-right: 4px;
+}
+
+/* Favorite tags summary */
+#fictrail-favorite-tags-summary-container {
+    text-align: center;
+    font-style: italic;
+}
+
 /* === REUSABLE COMPONENTS === */
 .fictrail-content-state {
     padding-top: 1em;
