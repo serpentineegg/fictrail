@@ -29,13 +29,12 @@
     margin: 0 auto;
 }
 
-/* Center buttons in error state */
 .error-content .actions {
-    justify-content: center;
     display: flex;
+    justify-content: center;
 }
 
-/* Subtitle styling in results */
+/* Subtitle styling */
 #fictrail-subtitle {
     display: flex;
     flex-wrap: wrap;
@@ -57,14 +56,13 @@
 
 /* Form layout */
 .fictrail-fieldset {
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0;
 }
 
 .fictrail-search-row {
     display: flex;
     gap: 1em;
-    align-items: stretch; /* 'stretch' for equal height */
+    align-items: stretch;
 }
 
 .fictrail-search-field {
@@ -83,16 +81,13 @@
 }
 
 .fictrail-search-field label,
-.fictrail-filter-field label,
-.fictrail-slider-field label {
-    font-weight: bold;
-    font-size: 0.9em;
-    margin-bottom: auto; /* Push input/select to bottom */
+.fictrail-filter-field label {
+    margin-bottom: auto;
 }
 
 .fictrail-search-field input,
 .fictrail-filter-field select {
-    margin-top: auto; /* Push input/select to bottom */
+    margin-top: auto;
 }
 
 .fictrail-actions {
@@ -159,12 +154,13 @@
     width: 200px;
 }
 
+/* Load more */
 .fictrail-load-more-container {
     width: 100%;
     text-align: center;
 }
 
-/* FicTrail summary styling with height limit and scrolling */
+/* FicTrail summary with height limit and scrolling */
 .fictrail-summary {
     max-height: 120px;
     overflow-y: auto;
@@ -176,7 +172,7 @@
     line-height: 1.4;
 }
 
-/* Dark mode support for FicTrail summary */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .fictrail-summary {
         border-color: rgba(255, 255, 255, 0.2);
@@ -184,77 +180,35 @@
     }
 }
 
-/* Custom scrollbar styling for FicTrail summaries */
-.fictrail-summary::-webkit-scrollbar {
-    width: 8px;
-}
-
-.fictrail-summary::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
-}
-
-.fictrail-summary::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-}
-
-.fictrail-summary::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-/* Dark mode scrollbar for FicTrail summaries */
-@media (prefers-color-scheme: dark) {
-    .fictrail-summary::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .fictrail-summary::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    .fictrail-summary::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.5);
-    }
-}
-
-/* List of works */
+/* Works list */
 #fictrail-works-list {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
+    margin: 1.5em 0;
 }
 
 #fictrail-works-list li.work {
     margin: 0 0 1em;
 }
 
-/* Responsive grid layout for work blurbs on large screens */
+/* 2-column layout for large screens */
 @media (min-width: 1800px) {
     #fictrail-works-list {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5em;
-        align-items: stretch; /* Make containers equal height */
-    }
-
-    #fictrail-works-list li.work {
-        break-inside: avoid;
+        align-items: stretch;
     }
 
     #fictrail-works-list li.work {
         margin: 0;
+        break-inside: avoid;
     }
 }
 
 /* Collapsible pages section */
 .fictrail-pages-section {
     margin: 1em 0;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 3px;
-    background: rgba(0, 0, 0, 0.02);
 }
 
-/* Toggle header */
 .fictrail-pages-toggle {
     cursor: pointer;
     user-select: none;
@@ -286,17 +240,10 @@
     display: inline-block;
 }
 
-/* Rotate icon when expanded */
 .fictrail-pages-toggle.expanded .fictrail-toggle-icon {
     transform: rotate(90deg);
 }
 
-/* Add border when expanded */
-.fictrail-pages-toggle.expanded {
-    border-bottom-color: rgba(0, 0, 0, 0.1);
-}
-
-/* Collapsible content */
 .fictrail-pages-content {
     padding: 0;
     overflow: hidden;
@@ -305,31 +252,13 @@
 }
 
 .fictrail-pages-content.expanded {
-    padding: 0 1em 1em;
+    padding: 1em 0 0;
     max-height: 500px;
     opacity: 1;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .fictrail-pages-section {
-        border-color: rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.05);
-    }
-
-    .fictrail-pages-toggle:hover,
-    .fictrail-pages-toggle:focus {
-        background: rgba(255, 255, 255, 0.08);
-    }
-
-    .fictrail-pages-toggle.expanded {
-        border-bottom-color: rgba(255, 255, 255, 0.2);
-    }
-}
-
-/* Mobile responsive styles */
+/* Mobile responsive */
 @media (max-width: 768px) {
-    /* Search form responsive */
     .fictrail-search-row {
         flex-direction: column;
         align-items: stretch;
@@ -341,7 +270,6 @@
         max-width: none;
     }
 
-    /* Reset label/input positioning for mobile */
     .fictrail-search-field label,
     .fictrail-filter-field label {
         margin-bottom: 0.3em;
@@ -352,22 +280,20 @@
         margin-top: 0;
     }
 
-    /* Subtitle responsive */
     #fictrail-subtitle {
         flex-direction: column;
         align-items: flex-start;
+        margin-bottom: 1em;
     }
 
     #fictrail-subtitle span:not(:first-child)::before {
         display: none;
     }
 
-    /* Hide favorite tags summary on smaller screens */
     #fictrail-favorite-tags-summary-container {
         display: none;
     }
 
-    /* Slider responsive */
     .fictrail-slider-field {
         align-items: normal;
     }
