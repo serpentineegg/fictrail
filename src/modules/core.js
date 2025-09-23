@@ -1,7 +1,6 @@
 // Core Module - Main functionality and history loading
 let allWorks = [];
 let filteredWorks = [];
-let lastFailedAction = null;
 
 // Pagination state
 let currentDisplayCount = 20;
@@ -11,7 +10,6 @@ function showLoginError() {
 }
 
 async function reloadHistory() {
-  lastFailedAction = 'reloadHistory';
   const username = getUsername();
   if (!username) {
     showLoginError();

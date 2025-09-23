@@ -77,22 +77,12 @@ function createOverlay() {
   }, 0);
 
   // Add event listeners with error checking
-  const closeBtn = document.getElementById('fictrail-close');
   const loadBtn = document.getElementById('fictrail-load-btn');
   const retryBtn = document.getElementById('fictrail-retry-btn');
   const searchInput = document.getElementById('fictrail-search-input');
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
   const pagesSlider = document.getElementById('fictrail-pages-slider');
 
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closeFicTrail);
-    closeBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        closeFicTrail();
-      }
-    });
-  }
   if (loadBtn) {
     loadBtn.addEventListener('click', reloadHistory);
     loadBtn.addEventListener('keydown', (e) => {
@@ -158,22 +148,6 @@ function openFicTrail() {
     // Show existing results
     showFicTrailResults();
   }
-}
-
-function closeFicTrail() {
-  const mainElement = document.getElementById('main');
-  const fictrailContainer = document.getElementById('fictrail-container');
-
-  if (mainElement) {
-    // Show all children of #main except FicTrail
-    Array.from(mainElement.children).forEach(child => {
-      if (child.id !== 'fictrail-container') {
-        child.style.display = '';
-      }
-    });
-  }
-
-  if (fictrailContainer) fictrailContainer.style.display = 'none';
 }
 
 // Helper functions to show different content states
