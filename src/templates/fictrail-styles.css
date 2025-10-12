@@ -115,7 +115,7 @@
 }
 
 /* === STATE-BASED STYLING === */
-.fictrail-pages-toggle.expanded .fictrail-toggle-icon {
+.fictrail-pages-toggle.ft-expanded .fictrail-toggle-icon {
     transform: rotate(90deg);
 }
 
@@ -126,7 +126,7 @@
     opacity: 0;
 }
 
-.fictrail-pages-content.expanded {
+.fictrail-pages-content.ft-expanded {
     padding: 1em 0 0;
     max-height: 500px;
     opacity: 1;
