@@ -658,16 +658,16 @@ function togglePagesSection() {
 
   if (!toggle || !content) return;
 
-  const isExpanded = content.classList.contains('expanded');
+  const isExpanded = content.classList.contains('ft-expanded');
 
   if (isExpanded) {
     // Collapse
-    toggle.classList.remove('expanded');
-    content.classList.remove('expanded');
+    toggle.classList.remove('ft-expanded');
+    content.classList.remove('ft-expanded');
   } else {
     // Expand
-    toggle.classList.add('expanded');
-    content.classList.add('expanded');
+    toggle.classList.add('ft-expanded');
+    content.classList.add('ft-expanded');
   }
 }
 
