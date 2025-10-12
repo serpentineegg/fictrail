@@ -94,9 +94,6 @@
 .fictrail-pages-toggle:hover,
 .fictrail-pages-toggle:focus {
     background: rgba(0, 0, 0, 0.05);
-    outline: 2px solid;
-    outline-color: inherit;
-    outline-offset: -2px;
 }
 
 .fictrail-toggle-header {
