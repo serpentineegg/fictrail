@@ -298,6 +298,29 @@ function addToHistoryPage() {
   return true;
 }
 
+// Update navigation links with current user's URLs
+function updateNavigationLinks() {
+  const username = getUsername();
+  if (!username) {
+    console.warn('Could not determine username for navigation links');
+    return;
+  }
+
+  const fullHistoryLink = document.getElementById('fictrail-full-history-link');
+  const markedLaterLink = document.getElementById('fictrail-marked-later-link');
+  const clearHistoryLink = document.getElementById('fictrail-clear-history-link');
+
+  if (fullHistoryLink) {
+    fullHistoryLink.href = `/users/${username}/readings`;
+  }
+  if (markedLaterLink) {
+    markedLaterLink.href = `/users/${username}/readings?show=to-read`;
+  }
+  if (clearHistoryLink) {
+    clearHistoryLink.href = `/users/${username}/readings/clear`;
+  }
+}
+
 // Create FicTrail content inside #main
 function createOverlay() {
   // Check if overlay already exists
@@ -319,6 +342,9 @@ function createOverlay() {
 
   // Insert FicTrail inside #main
   mainElement.appendChild(fictrailDiv);
+
+  // Update navigation links with current user's URLs
+  updateNavigationLinks();
 
   // Set default slider value after creating the overlay
   setTimeout(() => {
