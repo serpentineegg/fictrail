@@ -16,22 +16,34 @@ function performSearch() {
 
       if (work.relationships) {
         work.relationships.forEach(rel => {
-          if (rel.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'relationship', value: rel });
+          if (rel.text.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'relationship',
+              value: rel.text,
+              url: rel.url
+            });
           }
         });
       }
       if (work.characters) {
         work.characters.forEach(char => {
-          if (char.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'character', value: char });
+          if (char.text.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'character',
+              value: char.text,
+              url: char.url
+            });
           }
         });
       }
       if (work.freeforms) {
         work.freeforms.forEach(tag => {
-          if (tag.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'freeform', value: tag });
+          if (tag.text.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'freeform',
+              value: tag.text,
+              url: tag.url
+            });
           }
         });
       }
@@ -46,10 +58,10 @@ function performSearch() {
 
       return work.title.toLowerCase().includes(query) ||
                      work.author.toLowerCase().includes(query) ||
-                     work.fandoms.some(fandom => fandom.toLowerCase().includes(query)) ||
+                     work.fandoms.some(fandom => fandom.text.toLowerCase().includes(query)) ||
                      summaryText.toLowerCase().includes(query) ||
                      matchingTags.length > 0 ||
-                     (work.tags && work.tags.some(tag => tag.toLowerCase().includes(query)));
+                     (work.tags && work.tags.some(tag => tag.text.toLowerCase().includes(query)));
     });
   }
 
@@ -62,7 +74,7 @@ function applyFilter() {
   let worksToDisplay = [...filteredWorks];
   if (selectedFandom) {
     worksToDisplay = worksToDisplay.filter(work =>
-      work.fandoms.includes(selectedFandom)
+      work.fandoms.some(fandom => fandom.text === selectedFandom)
     );
   }
 
@@ -97,7 +109,9 @@ function populateFandomFilter(works) {
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
   const allFandoms = new Set();
   works.forEach(work => {
-    work.fandoms.forEach(fandom => allFandoms.add(fandom));
+    work.fandoms.forEach(fandom => {
+      allFandoms.add(fandom.text);
+    });
   });
 
   const sortedFandoms = Array.from(allFandoms).sort((a, b) => a.localeCompare(b));

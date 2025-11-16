@@ -24,14 +24,50 @@ function scrapeHistoryFromPage(doc) {
     const ratingClass = ratingSpan?.className || '';
 
     // Extract warnings
+    // Warnings can be:
+    // 1. "Creator Chose Not To Use Archive Warnings" (single, maps to "Choose Not To Use Archive Warnings" in URL)
+    //    Detected by class "warning-choosenotto"
+    // 2. Multiple warnings comma-separated (e.g., "Graphic Depictions Of Violence, Major Character Death, No Archive Warnings Apply")
+    //    These should be split into individual objects for the tags list, but kept together for required-tags display
+    // 3. "No Archive Warnings Apply" (single)
     const warningSpans = requiredTagsEl?.querySelectorAll('.warnings') || [];
-    const warnings = Array.from(warningSpans).flatMap(span => {
+    const warnings = []; // Individual warnings for tags list (split by commas)
+    const warningSpansData = []; // Original span data for required-tags display (full text + class)
+
+    warningSpans.forEach(span => {
       const textEl = span.querySelector('.text');
       const text = textEl ? textEl.textContent.trim() : '';
-      // Split by commas and clean up each warning
-      return text ? text.split(',').map(w => w.trim()).filter(w => w) : [];
+      if (!text) return;
+
+      const spanClass = span.className;
+      const isChooseNotTo = span.classList.contains('warning-choosenotto');
+
+      // Store the original span data for required-tags display (full text, single element)
+      warningSpansData.push({
+        text: text,
+        class: spanClass
+      });
+
+      // Split by commas to create individual warning objects for tags list
+      const warningTexts = text.split(',').map(w => w.trim()).filter(w => w);
+
+      warningTexts.forEach(warningText => {
+        // Special case: "Creator Chose Not To Use Archive Warnings" maps to "Choose Not To Use Archive Warnings" in URL
+        // Detected by the warning-choosenotto class
+        let urlText = warningText;
+        if (isChooseNotTo) {
+          urlText = 'Choose Not To Use Archive Warnings';
+        }
+
+        // Construct URL for the warning tag
+        const url = `/tags/${encodeURIComponent(urlText)}/works`;
+
+        warnings.push({
+          text: warningText,
+          url: url
+        });
+      });
     });
-    const warningClasses = Array.from(warningSpans).map(el => el.className);
 
     // Extract categories
     const categorySpans = requiredTagsEl?.querySelectorAll('.category') || [];
@@ -92,19 +128,34 @@ function scrapeHistoryFromPage(doc) {
         url: AO3_BASE_URL + titleLink.getAttribute('href'),
         author: authorLink ? authorLink.textContent.trim() : 'Anonymous',
         authorUrl: authorLink ? AO3_BASE_URL + authorLink.getAttribute('href') : null,
-        fandoms: Array.from(fandomLinks).map(link => link.textContent.trim()),
+        fandoms: Array.from(fandomLinks).map(link => ({
+          text: link.textContent.trim(),
+          url: link.getAttribute('href')
+        })),
         lastVisited: lastVisited,
         summary: summaryEl ? summaryEl.innerHTML : '',
         publishDate: dateEl ? dateEl.textContent.trim() : '',
-        tags: tagsEl ? Array.from(tagsEl.querySelectorAll('a.tag')).map(tag => tag.textContent.trim()) : [],
-        relationships: tagsEl ? Array.from(tagsEl.querySelectorAll('.relationships a.tag')).map(rel => rel.textContent.trim()) : [],
-        characters: tagsEl ? Array.from(tagsEl.querySelectorAll('.characters a.tag')).map(char => char.textContent.trim()) : [],
-        freeforms: tagsEl ? Array.from(tagsEl.querySelectorAll('.freeforms a.tag')).map(tag => tag.textContent.trim()) : [],
+        tags: tagsEl ? Array.from(tagsEl.querySelectorAll('a.tag')).map(tag => ({
+          text: tag.textContent.trim(),
+          url: tag.getAttribute('href')
+        })) : [],
+        relationships: tagsEl ? Array.from(tagsEl.querySelectorAll('.relationships a.tag')).map(rel => ({
+          text: rel.textContent.trim(),
+          url: rel.getAttribute('href')
+        })) : [],
+        characters: tagsEl ? Array.from(tagsEl.querySelectorAll('.characters a.tag')).map(char => ({
+          text: char.textContent.trim(),
+          url: char.getAttribute('href')
+        })) : [],
+        freeforms: tagsEl ? Array.from(tagsEl.querySelectorAll('.freeforms a.tag')).map(tag => ({
+          text: tag.textContent.trim(),
+          url: tag.getAttribute('href')
+        })) : [],
         // Required tags with text and CSS classes
         rating: ratingText,
         ratingClass: ratingClass,
-        warnings: warnings,
-        warningClasses: warningClasses,
+        warnings: warnings, // Individual warnings for tags list (split)
+        warningSpans: warningSpansData, // Original span data for required-tags display (full text + class)
         categories: categories,
         categoryClasses: categoryClasses,
         status: status,

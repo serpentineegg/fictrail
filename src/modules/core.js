@@ -83,7 +83,9 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
 
   const workCount = works.length;
   const uniqueAuthors = new Set(works.map(work => work.author)).size;
-  const uniqueFandoms = new Set(works.flatMap(work => work.fandoms)).size;
+  const uniqueFandoms = new Set(works.flatMap(work =>
+    work.fandoms.map(fandom => fandom.text)
+  )).size;
 
   // Update subtitle with cache status
   const worksCountEl = document.getElementById('fictrail-works-count');

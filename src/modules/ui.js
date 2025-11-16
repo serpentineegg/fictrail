@@ -58,10 +58,10 @@ const Templates = {
         <span class="landmark">Fandoms:</span>
         ${work.fandoms.map(fandom => {
       const highlightedFandom = searchQuery ?
-        highlightSearchTerms(escapeHtml(fandom), searchQuery) :
-        escapeHtml(fandom);
+        highlightSearchTerms(escapeHtml(fandom.text), searchQuery) :
+        escapeHtml(fandom.text);
 
-      return `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${highlightedFandom}</a>`;
+      return `<a class="tag" href="${fandom.url}" target="_blank" rel="noopener">${highlightedFandom}</a>`;
     }).join(', ')}
         &nbsp;
       </h5>
@@ -75,9 +75,10 @@ const Templates = {
       tags.push(this.requiredTag(work.rating, work.ratingClass));
     }
 
-    if (work.warnings && work.warningClasses) {
-      work.warnings.forEach((warning, index) => {
-        tags.push(this.requiredTag(warning, work.warningClasses[index] || ''));
+    // Use warningSpans for required-tags display (single element per span with full text)
+    if (work.warningSpans && work.warningSpans.length > 0) {
+      work.warningSpans.forEach(warningSpan => {
+        tags.push(this.requiredTag(warningSpan.text, warningSpan.class || ''));
       });
     }
 
@@ -123,8 +124,9 @@ const Templates = {
 
   tagItem(tag) {
     const cssClass = getTagCssClass(tag.type);
-    const encodedValue = encodeURIComponent(tag.value);
-    let escapedValue = escapeHtml(tag.value);
+    const tagValue = tag.value || tag.text;
+    const tagUrl = tag.url || `/tags/${encodeURIComponent(tagValue)}/works`;
+    let escapedValue = escapeHtml(tagValue);
 
     // Highlight search terms if there's a search query
     const searchInput = document.getElementById('fictrail-search-input');
@@ -136,7 +138,7 @@ const Templates = {
     return `
       <li class="${cssClass}">
         <a class="tag" 
-           href="/tags/${encodedValue}/works" 
+           href="${tagUrl}" 
            target="_blank" 
            rel="noopener">${escapedValue}</a>
       </li>
@@ -566,7 +568,7 @@ function addFavoriteTagsSummary(works) {
     ['relationships', 'characters', 'freeforms'].forEach(tagType => {
       if (work[tagType]) {
         work[tagType].forEach(tag => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          tagCounts[tag.text] = (tagCounts[tag.text] || 0) + 1;
         });
       }
     });
@@ -607,7 +609,11 @@ function getTagsToDisplay(work) {
   const hasSearchQuery = searchInput && searchInput.value.trim();
 
   // Always include warnings
-  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
+  const warningTags = (work.warnings || []).map(tag => ({
+    type: 'warning',
+    value: tag.text,
+    url: tag.url
+  }));
 
   if (hasSearchQuery) {
     // Show warnings plus matching tags during search
@@ -619,9 +625,9 @@ function getTagsToDisplay(work) {
     // Show all tags when no search query
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
-      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
-      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
+      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag.text, url: tag.url })),
+      ...(work.characters || []).map(tag => ({ type: 'character', value: tag.text, url: tag.url })),
+      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag.text, url: tag.url }))
     ];
   }
 }
