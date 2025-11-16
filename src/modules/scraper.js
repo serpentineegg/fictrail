@@ -92,14 +92,29 @@ function scrapeHistoryFromPage(doc) {
         url: AO3_BASE_URL + titleLink.getAttribute('href'),
         author: authorLink ? authorLink.textContent.trim() : 'Anonymous',
         authorUrl: authorLink ? AO3_BASE_URL + authorLink.getAttribute('href') : null,
-        fandoms: Array.from(fandomLinks).map(link => link.textContent.trim()),
+        fandoms: Array.from(fandomLinks).map(link => ({
+          text: link.textContent.trim(),
+          url: link.getAttribute('href')
+        })),
         lastVisited: lastVisited,
         summary: summaryEl ? summaryEl.innerHTML : '',
         publishDate: dateEl ? dateEl.textContent.trim() : '',
-        tags: tagsEl ? Array.from(tagsEl.querySelectorAll('a.tag')).map(tag => tag.textContent.trim()) : [],
-        relationships: tagsEl ? Array.from(tagsEl.querySelectorAll('.relationships a.tag')).map(rel => rel.textContent.trim()) : [],
-        characters: tagsEl ? Array.from(tagsEl.querySelectorAll('.characters a.tag')).map(char => char.textContent.trim()) : [],
-        freeforms: tagsEl ? Array.from(tagsEl.querySelectorAll('.freeforms a.tag')).map(tag => tag.textContent.trim()) : [],
+        tags: tagsEl ? Array.from(tagsEl.querySelectorAll('a.tag')).map(tag => ({
+          text: tag.textContent.trim(),
+          url: tag.getAttribute('href')
+        })) : [],
+        relationships: tagsEl ? Array.from(tagsEl.querySelectorAll('.relationships a.tag')).map(rel => ({
+          text: rel.textContent.trim(),
+          url: rel.getAttribute('href')
+        })) : [],
+        characters: tagsEl ? Array.from(tagsEl.querySelectorAll('.characters a.tag')).map(char => ({
+          text: char.textContent.trim(),
+          url: char.getAttribute('href')
+        })) : [],
+        freeforms: tagsEl ? Array.from(tagsEl.querySelectorAll('.freeforms a.tag')).map(tag => ({
+          text: tag.textContent.trim(),
+          url: tag.getAttribute('href')
+        })) : [],
         // Required tags with text and CSS classes
         rating: ratingText,
         ratingClass: ratingClass,

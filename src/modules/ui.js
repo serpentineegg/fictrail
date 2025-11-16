@@ -57,11 +57,13 @@ const Templates = {
       <h5 class="fandoms heading">
         <span class="landmark">Fandoms:</span>
         ${work.fandoms.map(fandom => {
+      const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
+      const fandomUrl = typeof fandom === 'string' ? `/tags/${encodeURIComponent(fandom)}/works` : fandom.url;
       const highlightedFandom = searchQuery ?
-        highlightSearchTerms(escapeHtml(fandom), searchQuery) :
-        escapeHtml(fandom);
+        highlightSearchTerms(escapeHtml(fandomText), searchQuery) :
+        escapeHtml(fandomText);
 
-      return `<a class="tag" href="/tags/${encodeURIComponent(fandom)}/works" target="_blank" rel="noopener">${highlightedFandom}</a>`;
+      return `<a class="tag" href="${fandomUrl}" target="_blank" rel="noopener">${highlightedFandom}</a>`;
     }).join(', ')}
         &nbsp;
       </h5>
@@ -123,8 +125,9 @@ const Templates = {
 
   tagItem(tag) {
     const cssClass = getTagCssClass(tag.type);
-    const encodedValue = encodeURIComponent(tag.value);
-    let escapedValue = escapeHtml(tag.value);
+    const tagValue = tag.value || (typeof tag === 'string' ? tag : tag.text);
+    const tagUrl = tag.url || `/tags/${encodeURIComponent(tagValue)}/works`;
+    let escapedValue = escapeHtml(tagValue);
 
     // Highlight search terms if there's a search query
     const searchInput = document.getElementById('fictrail-search-input');
@@ -136,7 +139,7 @@ const Templates = {
     return `
       <li class="${cssClass}">
         <a class="tag" 
-           href="/tags/${encodedValue}/works" 
+           href="${tagUrl}" 
            target="_blank" 
            rel="noopener">${escapedValue}</a>
       </li>
@@ -566,7 +569,8 @@ function addFavoriteTagsSummary(works) {
     ['relationships', 'characters', 'freeforms'].forEach(tagType => {
       if (work[tagType]) {
         work[tagType].forEach(tag => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          const tagText = typeof tag === 'string' ? tag : tag.text;
+          tagCounts[tagText] = (tagCounts[tagText] || 0) + 1;
         });
       }
     });
@@ -617,11 +621,19 @@ function getTagsToDisplay(work) {
     return [...warningTags, ...nonWarningMatchingTags];
   } else {
     // Show all tags when no search query
+    // Handle both old format (strings) and new format (objects with text/url)
+    const mapTag = (tag, type) => {
+      if (typeof tag === 'string') {
+        return { type, value: tag };
+      }
+      return { type, value: tag.text, url: tag.url };
+    };
+
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag })),
-      ...(work.characters || []).map(tag => ({ type: 'character', value: tag })),
-      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag }))
+      ...(work.relationships || []).map(tag => mapTag(tag, 'relationship')),
+      ...(work.characters || []).map(tag => mapTag(tag, 'character')),
+      ...(work.freeforms || []).map(tag => mapTag(tag, 'freeform'))
     ];
   }
 }

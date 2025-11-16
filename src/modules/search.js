@@ -16,22 +16,37 @@ function performSearch() {
 
       if (work.relationships) {
         work.relationships.forEach(rel => {
-          if (rel.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'relationship', value: rel });
+          const relText = typeof rel === 'string' ? rel : rel.text;
+          if (relText.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'relationship',
+              value: relText,
+              url: typeof rel === 'string' ? undefined : rel.url
+            });
           }
         });
       }
       if (work.characters) {
         work.characters.forEach(char => {
-          if (char.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'character', value: char });
+          const charText = typeof char === 'string' ? char : char.text;
+          if (charText.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'character',
+              value: charText,
+              url: typeof char === 'string' ? undefined : char.url
+            });
           }
         });
       }
       if (work.freeforms) {
         work.freeforms.forEach(tag => {
-          if (tag.toLowerCase().includes(query)) {
-            matchingTags.push({ type: 'freeform', value: tag });
+          const tagText = typeof tag === 'string' ? tag : tag.text;
+          if (tagText.toLowerCase().includes(query)) {
+            matchingTags.push({
+              type: 'freeform',
+              value: tagText,
+              url: typeof tag === 'string' ? undefined : tag.url
+            });
           }
         });
       }
@@ -44,12 +59,15 @@ function performSearch() {
       tempDiv.innerHTML = work.summary || '';
       const summaryText = tempDiv.textContent || tempDiv.innerText || '';
 
+      // Helper to get text from tag (handles both string and object formats)
+      const getTagText = (tag) => typeof tag === 'string' ? tag : tag.text;
+
       return work.title.toLowerCase().includes(query) ||
                      work.author.toLowerCase().includes(query) ||
-                     work.fandoms.some(fandom => fandom.toLowerCase().includes(query)) ||
+                     work.fandoms.some(fandom => getTagText(fandom).toLowerCase().includes(query)) ||
                      summaryText.toLowerCase().includes(query) ||
                      matchingTags.length > 0 ||
-                     (work.tags && work.tags.some(tag => tag.toLowerCase().includes(query)));
+                     (work.tags && work.tags.some(tag => getTagText(tag).toLowerCase().includes(query)));
     });
   }
 
@@ -62,7 +80,10 @@ function applyFilter() {
   let worksToDisplay = [...filteredWorks];
   if (selectedFandom) {
     worksToDisplay = worksToDisplay.filter(work =>
-      work.fandoms.includes(selectedFandom)
+      work.fandoms.some(fandom => {
+        const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
+        return fandomText === selectedFandom;
+      })
     );
   }
 
@@ -97,7 +118,10 @@ function populateFandomFilter(works) {
   const fandomFilter = document.getElementById('fictrail-fandom-filter');
   const allFandoms = new Set();
   works.forEach(work => {
-    work.fandoms.forEach(fandom => allFandoms.add(fandom));
+    work.fandoms.forEach(fandom => {
+      const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
+      allFandoms.add(fandomText);
+    });
   });
 
   const sortedFandoms = Array.from(allFandoms).sort((a, b) => a.localeCompare(b));
