@@ -28,10 +28,11 @@ function scrapeHistoryFromPage(doc) {
     // 1. "Creator Chose Not To Use Archive Warnings" (single, maps to "Choose Not To Use Archive Warnings" in URL)
     //    Detected by class "warning-choosenotto"
     // 2. Multiple warnings comma-separated (e.g., "Graphic Depictions Of Violence, Major Character Death, No Archive Warnings Apply")
+    //    These should be split into individual objects for the tags list, but kept together for required-tags display
     // 3. "No Archive Warnings Apply" (single)
     const warningSpans = requiredTagsEl?.querySelectorAll('.warnings') || [];
-    const warnings = [];
-    const warningClasses = [];
+    const warnings = []; // Individual warnings for tags list (split by commas)
+    const warningSpansData = []; // Original span data for required-tags display (full text + class)
 
     warningSpans.forEach(span => {
       const textEl = span.querySelector('.text');
@@ -41,7 +42,13 @@ function scrapeHistoryFromPage(doc) {
       const spanClass = span.className;
       const isChooseNotTo = span.classList.contains('warning-choosenotto');
 
-      // Split by commas to handle multiple warnings
+      // Store the original span data for required-tags display (full text, single element)
+      warningSpansData.push({
+        text: text,
+        class: spanClass
+      });
+
+      // Split by commas to create individual warning objects for tags list
       const warningTexts = text.split(',').map(w => w.trim()).filter(w => w);
 
       warningTexts.forEach(warningText => {
@@ -59,9 +66,6 @@ function scrapeHistoryFromPage(doc) {
           text: warningText,
           url: url
         });
-
-        // Store the class for this warning (all warnings from the same span share the same class)
-        warningClasses.push(spanClass);
       });
     });
 
@@ -150,8 +154,8 @@ function scrapeHistoryFromPage(doc) {
         // Required tags with text and CSS classes
         rating: ratingText,
         ratingClass: ratingClass,
-        warnings: warnings,
-        warningClasses: warningClasses,
+        warnings: warnings, // Individual warnings for tags list (split)
+        warningSpans: warningSpansData, // Original span data for required-tags display (full text + class)
         categories: categories,
         categoryClasses: categoryClasses,
         status: status,

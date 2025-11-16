@@ -75,7 +75,14 @@ const Templates = {
       tags.push(this.requiredTag(work.rating, work.ratingClass));
     }
 
-    if (work.warnings && work.warningClasses) {
+    // Use warningSpans for required-tags display (single element per span with full text)
+    // Fall back to warnings + warningClasses for backward compatibility
+    if (work.warningSpans && work.warningSpans.length > 0) {
+      work.warningSpans.forEach(warningSpan => {
+        tags.push(this.requiredTag(warningSpan.text, warningSpan.class || ''));
+      });
+    } else if (work.warnings && work.warningClasses) {
+      // Backward compatibility: if warningSpans not available, use warnings + warningClasses
       work.warnings.forEach((warning, index) => {
         tags.push(this.requiredTag(warning.text, work.warningClasses[index] || ''));
       });
