@@ -16,36 +16,33 @@ function performSearch() {
 
       if (work.relationships) {
         work.relationships.forEach(rel => {
-          const relText = typeof rel === 'string' ? rel : rel.text;
-          if (relText.toLowerCase().includes(query)) {
+          if (rel.text.toLowerCase().includes(query)) {
             matchingTags.push({
               type: 'relationship',
-              value: relText,
-              url: typeof rel === 'string' ? undefined : rel.url
+              value: rel.text,
+              url: rel.url
             });
           }
         });
       }
       if (work.characters) {
         work.characters.forEach(char => {
-          const charText = typeof char === 'string' ? char : char.text;
-          if (charText.toLowerCase().includes(query)) {
+          if (char.text.toLowerCase().includes(query)) {
             matchingTags.push({
               type: 'character',
-              value: charText,
-              url: typeof char === 'string' ? undefined : char.url
+              value: char.text,
+              url: char.url
             });
           }
         });
       }
       if (work.freeforms) {
         work.freeforms.forEach(tag => {
-          const tagText = typeof tag === 'string' ? tag : tag.text;
-          if (tagText.toLowerCase().includes(query)) {
+          if (tag.text.toLowerCase().includes(query)) {
             matchingTags.push({
               type: 'freeform',
-              value: tagText,
-              url: typeof tag === 'string' ? undefined : tag.url
+              value: tag.text,
+              url: tag.url
             });
           }
         });
@@ -59,15 +56,12 @@ function performSearch() {
       tempDiv.innerHTML = work.summary || '';
       const summaryText = tempDiv.textContent || tempDiv.innerText || '';
 
-      // Helper to get text from tag (handles both string and object formats)
-      const getTagText = (tag) => typeof tag === 'string' ? tag : tag.text;
-
       return work.title.toLowerCase().includes(query) ||
                      work.author.toLowerCase().includes(query) ||
-                     work.fandoms.some(fandom => getTagText(fandom).toLowerCase().includes(query)) ||
+                     work.fandoms.some(fandom => fandom.text.toLowerCase().includes(query)) ||
                      summaryText.toLowerCase().includes(query) ||
                      matchingTags.length > 0 ||
-                     (work.tags && work.tags.some(tag => getTagText(tag).toLowerCase().includes(query)));
+                     (work.tags && work.tags.some(tag => tag.text.toLowerCase().includes(query)));
     });
   }
 
@@ -80,10 +74,7 @@ function applyFilter() {
   let worksToDisplay = [...filteredWorks];
   if (selectedFandom) {
     worksToDisplay = worksToDisplay.filter(work =>
-      work.fandoms.some(fandom => {
-        const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
-        return fandomText === selectedFandom;
-      })
+      work.fandoms.some(fandom => fandom.text === selectedFandom)
     );
   }
 
@@ -119,8 +110,7 @@ function populateFandomFilter(works) {
   const allFandoms = new Set();
   works.forEach(work => {
     work.fandoms.forEach(fandom => {
-      const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
-      allFandoms.add(fandomText);
+      allFandoms.add(fandom.text);
     });
   });
 

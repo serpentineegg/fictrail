@@ -24,14 +24,46 @@ function scrapeHistoryFromPage(doc) {
     const ratingClass = ratingSpan?.className || '';
 
     // Extract warnings
+    // Warnings can be:
+    // 1. "Creator Chose Not To Use Archive Warnings" (single, maps to "Choose Not To Use Archive Warnings" in URL)
+    //    Detected by class "warning-choosenotto"
+    // 2. Multiple warnings comma-separated (e.g., "Graphic Depictions Of Violence, Major Character Death, No Archive Warnings Apply")
+    // 3. "No Archive Warnings Apply" (single)
     const warningSpans = requiredTagsEl?.querySelectorAll('.warnings') || [];
-    const warnings = Array.from(warningSpans).flatMap(span => {
+    const warnings = [];
+    const warningClasses = [];
+
+    warningSpans.forEach(span => {
       const textEl = span.querySelector('.text');
       const text = textEl ? textEl.textContent.trim() : '';
-      // Split by commas and clean up each warning
-      return text ? text.split(',').map(w => w.trim()).filter(w => w) : [];
+      if (!text) return;
+
+      const spanClass = span.className;
+      const isChooseNotTo = span.classList.contains('warning-choosenotto');
+
+      // Split by commas to handle multiple warnings
+      const warningTexts = text.split(',').map(w => w.trim()).filter(w => w);
+
+      warningTexts.forEach(warningText => {
+        // Special case: "Creator Chose Not To Use Archive Warnings" maps to "Choose Not To Use Archive Warnings" in URL
+        // Detected by the warning-choosenotto class
+        let urlText = warningText;
+        if (isChooseNotTo) {
+          urlText = 'Choose Not To Use Archive Warnings';
+        }
+
+        // Construct URL for the warning tag
+        const url = `/tags/${encodeURIComponent(urlText)}/works`;
+
+        warnings.push({
+          text: warningText,
+          url: url
+        });
+
+        // Store the class for this warning (all warnings from the same span share the same class)
+        warningClasses.push(spanClass);
+      });
     });
-    const warningClasses = Array.from(warningSpans).map(el => el.className);
 
     // Extract categories
     const categorySpans = requiredTagsEl?.querySelectorAll('.category') || [];

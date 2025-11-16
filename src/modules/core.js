@@ -84,7 +84,7 @@ function displayHistory(username, works, totalPages, actualPagesLoaded, preserve
   const workCount = works.length;
   const uniqueAuthors = new Set(works.map(work => work.author)).size;
   const uniqueFandoms = new Set(works.flatMap(work =>
-    work.fandoms.map(fandom => typeof fandom === 'string' ? fandom : fandom.text)
+    work.fandoms.map(fandom => fandom.text)
   )).size;
 
   // Update subtitle with cache status

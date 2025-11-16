@@ -57,13 +57,11 @@ const Templates = {
       <h5 class="fandoms heading">
         <span class="landmark">Fandoms:</span>
         ${work.fandoms.map(fandom => {
-      const fandomText = typeof fandom === 'string' ? fandom : fandom.text;
-      const fandomUrl = typeof fandom === 'string' ? `/tags/${encodeURIComponent(fandom)}/works` : fandom.url;
       const highlightedFandom = searchQuery ?
-        highlightSearchTerms(escapeHtml(fandomText), searchQuery) :
-        escapeHtml(fandomText);
+        highlightSearchTerms(escapeHtml(fandom.text), searchQuery) :
+        escapeHtml(fandom.text);
 
-      return `<a class="tag" href="${fandomUrl}" target="_blank" rel="noopener">${highlightedFandom}</a>`;
+      return `<a class="tag" href="${fandom.url}" target="_blank" rel="noopener">${highlightedFandom}</a>`;
     }).join(', ')}
         &nbsp;
       </h5>
@@ -79,7 +77,7 @@ const Templates = {
 
     if (work.warnings && work.warningClasses) {
       work.warnings.forEach((warning, index) => {
-        tags.push(this.requiredTag(warning, work.warningClasses[index] || ''));
+        tags.push(this.requiredTag(warning.text, work.warningClasses[index] || ''));
       });
     }
 
@@ -125,7 +123,7 @@ const Templates = {
 
   tagItem(tag) {
     const cssClass = getTagCssClass(tag.type);
-    const tagValue = tag.value || (typeof tag === 'string' ? tag : tag.text);
+    const tagValue = tag.value || tag.text;
     const tagUrl = tag.url || `/tags/${encodeURIComponent(tagValue)}/works`;
     let escapedValue = escapeHtml(tagValue);
 
@@ -569,8 +567,7 @@ function addFavoriteTagsSummary(works) {
     ['relationships', 'characters', 'freeforms'].forEach(tagType => {
       if (work[tagType]) {
         work[tagType].forEach(tag => {
-          const tagText = typeof tag === 'string' ? tag : tag.text;
-          tagCounts[tagText] = (tagCounts[tagText] || 0) + 1;
+          tagCounts[tag.text] = (tagCounts[tag.text] || 0) + 1;
         });
       }
     });
@@ -611,7 +608,11 @@ function getTagsToDisplay(work) {
   const hasSearchQuery = searchInput && searchInput.value.trim();
 
   // Always include warnings
-  const warningTags = (work.warnings || []).map(tag => ({ type: 'warning', value: tag }));
+  const warningTags = (work.warnings || []).map(tag => ({
+    type: 'warning',
+    value: tag.text,
+    url: tag.url
+  }));
 
   if (hasSearchQuery) {
     // Show warnings plus matching tags during search
@@ -621,19 +622,11 @@ function getTagsToDisplay(work) {
     return [...warningTags, ...nonWarningMatchingTags];
   } else {
     // Show all tags when no search query
-    // Handle both old format (strings) and new format (objects with text/url)
-    const mapTag = (tag, type) => {
-      if (typeof tag === 'string') {
-        return { type, value: tag };
-      }
-      return { type, value: tag.text, url: tag.url };
-    };
-
     return [
       ...warningTags,
-      ...(work.relationships || []).map(tag => mapTag(tag, 'relationship')),
-      ...(work.characters || []).map(tag => mapTag(tag, 'character')),
-      ...(work.freeforms || []).map(tag => mapTag(tag, 'freeform'))
+      ...(work.relationships || []).map(tag => ({ type: 'relationship', value: tag.text, url: tag.url })),
+      ...(work.characters || []).map(tag => ({ type: 'character', value: tag.text, url: tag.url })),
+      ...(work.freeforms || []).map(tag => ({ type: 'freeform', value: tag.text, url: tag.url }))
     ];
   }
 }
