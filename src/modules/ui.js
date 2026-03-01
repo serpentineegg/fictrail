@@ -135,14 +135,7 @@ const Templates = {
       escapedValue = highlightSearchTerms(escapedValue, searchQuery);
     }
 
-    return `
-      <li class="${cssClass}">
-        <a class="tag" 
-           href="${tagUrl}" 
-           target="_blank" 
-           rel="noopener">${escapedValue}</a>
-      </li>
-    `;
+    return `<li class="${cssClass}"><a class="tag" href="${tagUrl}" target="_blank" rel="noopener">${escapedValue}</a></li>`;
   },
 
   workSummary(work) {
